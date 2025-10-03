@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock, patch
+
 from historical_flights_airport_gym.utils.get_data import get_data
 
 
@@ -10,7 +11,10 @@ def test_status_200_get_request(mock_get):
     mock_response.json.return_value = json_str_response
     mock_get.return_value = mock_response
 
-    response = get_data()
+    url = "https://sas.anac.gov.br/sas/vra_api/vra/data?"
+    params = {"dt_voo": "01012025"}
+
+    response = get_data(url=url, params=params)
 
     assert response.status_code == 200
-    assert response.json() is str
+    assert isinstance(response.json(), str)
