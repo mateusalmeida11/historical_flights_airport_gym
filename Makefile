@@ -14,7 +14,7 @@ lock:
 test:
 	@echo "Starting the tests process..."
 	@poetry install --with dev
-	@poetry run pytest --cov=formula_1_etl/ --cov-fail-under=70
+	@poetry run pytest --cov=historical_flights_airport_gym/ --cov-fail-under=70
 	@poetry run coverage html
 
 version_patch:
