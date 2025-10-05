@@ -33,3 +33,7 @@ def get_data(url, params):
         ) from e
     except requests.exceptions.Timeout as e:
         raise RequestError("Erro Timeoout", response_body="Erro de Timeout") from e
+    except requests.exceptions.RequestException as e:
+        raise RequestError(
+            "Erro Generico", response_body="Erro Generico de Requisicao"
+        ) from e
