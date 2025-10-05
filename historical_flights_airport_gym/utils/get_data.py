@@ -4,10 +4,9 @@ from urllib3.util.retry import Retry
 
 
 class RequestError(Exception):
-    def __init__(self, message, status_code=None, endpoint=None, response_body=None):
+    def __init__(self, message, status_code=None, response_body=None):
         super().__init__(message)
         self.status_code = status_code
-        self.endpoint = endpoint
         self.response_body = response_body
 
 
@@ -32,3 +31,5 @@ def get_data(url, params):
             status_code=e.response.status_code,
             response_body=e.response.text,
         ) from e
+    except requests.exceptions.Timeout as e:
+        raise RequestError("Erro Timeoout", response_body="Erro de Timeout") from e
