@@ -1,6 +1,9 @@
 from unittest.mock import MagicMock, patch
 
-from historical_flights_airport_gym.utils.get_data import get_data
+import pytest
+from requests.exceptions import HTTPError
+
+from historical_flights_airport_gym.utils.get_data import RequestError, get_data
 
 
 @patch("historical_flights_airport_gym.utils.get_data.requests.Session.get")
@@ -18,3 +21,30 @@ def test_status_200_get_request(mock_get):
 
     assert response.status_code == 200
     assert isinstance(response.json(), str)
+
+
+@patch("historical_flights_airport_gym.utils.get_data.requests.Session.get")
+def test_status_404_error_rout_api(mock_get):
+    mock_response = MagicMock()
+    mock_response.status_code = 404
+    mock_response.text = b"""
+    <!DOCTYPE html>
+    <html>
+      <head><title>The resource cannot be found.</title></head>
+      <body>
+        <h1>Server Error in '/sas/vra_api' Application.</h1>
+        <h2>The resource cannot be found.</h2>
+        <p>Requested URL: /sas/vra_api/vra/airport</p>
+      </body>
+    </html>
+    """
+    mock_response.raise_for_status.side_effect = HTTPError(response=mock_response)
+    mock_get.return_value = mock_response
+    url = "https://sas.anac.gov.br/sas/vra_api/vra/data?"
+    params = {"dt_voo": "01012025"}
+    with pytest.raises(RequestError) as excinfo:
+        get_data(url=url, params=params)
+
+    e = excinfo.value
+    assert e.status_code == 404
+    assert "The resource cannot be found" in e.response_body
