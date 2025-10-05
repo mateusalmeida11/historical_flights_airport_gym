@@ -27,7 +27,7 @@ def test_status_200_get_request(mock_get):
 def test_status_404_error_rout_api(mock_get):
     mock_response = MagicMock()
     mock_response.status_code = 404
-    mock_response.text = b"""
+    mock_response.text = """
     <!DOCTYPE html>
     <html>
       <head><title>The resource cannot be found.</title></head>
