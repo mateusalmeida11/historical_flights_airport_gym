@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-from requests.exceptions import HTTPError
+from requests.exceptions import HTTPError, Timeout
 
 from historical_flights_airport_gym.utils.get_data import RequestError, get_data
 
@@ -48,3 +48,19 @@ def test_status_404_error_rout_api(mock_get):
     e = excinfo.value
     assert e.status_code == 404
     assert "The resource cannot be found" in e.response_body
+
+
+@patch("historical_flights_airport_gym.utils.get_data.requests.Session.get")
+def test_error_timeout(mock_get):
+    mock_response = MagicMock()
+    mock_response.raise_for_status.side_effect = Timeout(response=mock_response)
+    mock_get.return_value = mock_response
+    url = "https://sas.anac.gov.br/sas/vra_api/vra/data?"
+    params = {"dt_voo": "01012025"}
+
+    with pytest.raises(RequestError) as excinfo:
+        get_data(url=url, params=params)
+
+    e = excinfo.value
+    assert e.status_code is None
+    assert "Erro de Timeout" == e.response_body
