@@ -3,7 +3,7 @@ import json
 import boto3
 from moto import mock_aws
 
-from historical_flights_airport_gym.utils.aws import S3
+from historical_flights_airport_gym.utils.aws.S3 import S3
 
 
 @mock_aws
@@ -39,7 +39,7 @@ def test_upload_s3_success():
     ]
 
     jsonData = json.dumps(body, indent=4)
-    s3 = S3(bucket_name)
+    s3 = S3(bucket_name=bucket_name)
     response = s3.upload_file(data=jsonData, key=key)
 
     status_code = response["ResponseMetadata"]["HTTPStatusCode"]
