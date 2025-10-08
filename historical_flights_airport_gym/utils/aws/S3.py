@@ -1,3 +1,5 @@
+import os
+
 import boto3
 from botocore.exceptions import ClientError
 
@@ -11,8 +13,23 @@ class S3UploadError(Exception):
 
 class S3:
     def __init__(self, bucket_name):
-        self.s3_client = boto3.client("s3", region_name="us-east-1")
+        self.s3_client = self.create_client()
         self.bucket_name = bucket_name
+
+    def create_client(self):
+        access_key = os.environ.get("ACCESS_KEY")
+        secret_access_key = os.environ.get("SECRET_ACCESS_KEY")
+        region = os.environ.get("REGION", "us-east-1")
+
+        if access_key and secret_access_key:
+            return boto3.client(
+                "s3",
+                aws_access_key_id=access_key,
+                aws_secret_access_key=secret_access_key,
+                region_name=region,
+            )
+        else:
+            return boto3.client("s3", region_name=region)
 
     def upload_file(self, data, key):
         try:
