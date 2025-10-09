@@ -14,7 +14,7 @@ def from_str_to_json(response: requests.Response):
     try:
         jsonStr = response.json()
         return json.loads(jsonStr)
-    except requests.exceptions.JSONDecodeError as e:
+    except json.JSONDecodeError as e:
         raise JsonProcessingError(
-            "Erro ao Processar Json", status_code=500, response_body=e
+            "Erro ao Processar Json", status_code=500, response_body=str(e)
         ) from e
