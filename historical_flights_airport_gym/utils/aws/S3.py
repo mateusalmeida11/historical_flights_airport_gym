@@ -12,9 +12,8 @@ class S3UploadError(Exception):
 
 
 class S3:
-    def __init__(self, bucket_name):
+    def __init__(self):
         self.s3_client = self.create_client()
-        self.bucket_name = bucket_name
 
     def create_client(self):
         access_key = os.environ.get("ACCESS_KEY")
@@ -31,12 +30,12 @@ class S3:
         else:
             return boto3.client("s3", region_name=region)
 
-    def upload_file(self, data, key):
+    def upload_file(self, bucket, data, key):
         try:
             response = self.s3_client.put_object(
                 Body=data,
                 Key=key,
-                Bucket=self.bucket_name,
+                Bucket=bucket,
                 ContentType="application/json",
             )
             return response
