@@ -1,7 +1,7 @@
+import json
 from unittest.mock import MagicMock, patch
 
 import pytest
-from requests.exceptions import JSONDecodeError
 
 from historical_flights_airport_gym.utils.get_data import get_data
 from historical_flights_airport_gym.utils.transformations import (
@@ -32,10 +32,9 @@ def test_conv_str_json_error_transf(mock_get):
     mock_response = MagicMock()
     json_str_response = '[{"sg_empresa_icao":'
     mock_response.status_code = 200
-    mock_response.json.return_value = json_str_response
 
-    mock_response.json.side_effect = JSONDecodeError(
-        "Expecting Value", doc=json_str_response, pos=1, lineno=1
+    mock_response.json.side_effect = json.JSONDecodeError(
+        "Expecting Value", json_str_response, 1
     )
     mock_get.return_value = mock_response
 
