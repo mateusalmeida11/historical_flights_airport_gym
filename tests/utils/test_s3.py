@@ -40,8 +40,8 @@ def test_upload_s3_success():
     ]
 
     jsonData = json.dumps(body, indent=4)
-    s3 = S3(bucket_name=bucket_name)
-    response = s3.upload_file(data=jsonData, key=key)
+    s3 = S3()
+    response = s3.upload_file(data=jsonData, bucket=bucket_name, key=key)
 
     status_code = response["ResponseMetadata"]["HTTPStatusCode"]
     assert status_code == 200
@@ -83,8 +83,8 @@ def test_upload_s3_inexistente():
     jsonData = json.dumps(body, indent=4)
 
     with pytest.raises(S3UploadError) as excinfo:
-        s3 = S3(bucket_name=bucket_name)
-        s3.upload_file(data=jsonData, key=key)
+        s3 = S3()
+        s3.upload_file(data=jsonData, bucket=bucket_name, key=key)
 
     e = excinfo.value
     assert e.status_code == 404
