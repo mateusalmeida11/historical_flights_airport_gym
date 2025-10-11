@@ -1,3 +1,4 @@
+import json
 from unittest.mock import MagicMock, patch
 
 import boto3
@@ -101,3 +102,34 @@ def test_upload_s3(mock_get):
     assert result["status_code"] == 404
     assert result["bucket"] == bucket_name
     assert result["message"] == "The specified bucket does not exist"
+
+
+@mock_aws
+@patch("historical_flights_airport_gym.utils.get_data.requests.Session.get")
+def test_error_json(mock_get):
+    mock_response = MagicMock()
+    json_str_response = '[{"sg_empresa_icao'
+    mock_response.status_code = 200
+
+    mock_response.json.side_effect = json.JSONDecodeError(
+        "Expecting Value", json_str_response, 1
+    )
+
+    mock_get.return_value = mock_response
+    bucket_name = "etl-brazilian-flights"
+    client = boto3.client("s3", region_name="us-east-1")
+    client.create_bucket(Bucket=bucket_name)
+
+    event = {
+        "layer": "bronze",
+        "bucket": bucket_name,
+        "dt_voo": "01012025",
+    }
+
+    context = {}
+
+    result = lambda_handler(event=event, context=context)
+
+    assert result["type"] == "JSONProcessingError"
+    assert result["status_code"] == 500
+    assert result["status"] == "Error"
