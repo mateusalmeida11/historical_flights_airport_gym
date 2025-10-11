@@ -7,6 +7,7 @@ from historical_flights_airport_gym.conectores.anac.lambda_balancer import (
 )
 from historical_flights_airport_gym.utils.transformations import (
     DateOutRangeError,
+    DateParserError,
     from_str_to_datetime,
 )
 
@@ -46,3 +47,15 @@ def test_funcao_de_transformacao_str_para_data_erro_date_out_range():
     e = excinfo.value
 
     assert e.message == f"Data {start_date} fora do intervalo do mes"
+
+
+def test_funcao_de_transformacao_str_para_data_erro_parser():
+    start_date = "aa012025"
+    date_str_formated = f"{start_date[:2]}/{start_date[2:4]}/{start_date[4:]}"
+
+    with pytest.raises(DateParserError) as excinfo:
+        from_str_to_datetime(date=start_date)
+
+    e = excinfo.value
+
+    assert e.message == f"Unknow string format {date_str_formated}"
