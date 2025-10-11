@@ -1,6 +1,7 @@
 import json
 
 import requests
+from dateutil import parser
 
 
 class JsonProcessingError(Exception):
@@ -18,3 +19,8 @@ def from_str_to_json(response: requests.Response):
         raise JsonProcessingError(
             "Erro ao Processar Json", status_code=500, response_body=str(e)
         ) from e
+
+
+def from_str_to_datetime(date: str):
+    date_str_formated = f"{date[:2]}/{date[2:4]}/{date[4:]}"
+    return parser.parse(date_str_formated, dayfirst=True)
