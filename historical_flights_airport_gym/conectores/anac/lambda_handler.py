@@ -3,7 +3,10 @@ import json
 from historical_flights_airport_gym.utils.aws.S3 import S3, S3UploadError
 from historical_flights_airport_gym.utils.build_path import path_file_raw
 from historical_flights_airport_gym.utils.get_data import RequestError, get_data
-from historical_flights_airport_gym.utils.transformations import from_str_to_json
+from historical_flights_airport_gym.utils.transformations import (
+    JsonProcessingError,
+    from_str_to_json,
+)
 
 s3 = S3()
 
@@ -51,4 +54,11 @@ def lambda_handler(event, context):
             "message": e.message,
             "bucket": bucket,
             "key": key,
+        }
+    except JsonProcessingError as e:
+        return {
+            "status": "error",
+            "type": "JSONProcessingError",
+            "status_code": e.status_code,
+            "message": str(e),
         }
