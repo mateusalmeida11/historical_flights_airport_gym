@@ -1,6 +1,6 @@
 import json
 
-from historical_flights_airport_gym.utils.aws.S3 import S3
+from historical_flights_airport_gym.utils.aws.S3 import S3, S3UploadError
 from historical_flights_airport_gym.utils.build_path import path_file_raw
 from historical_flights_airport_gym.utils.get_data import RequestError, get_data
 from historical_flights_airport_gym.utils.transformations import from_str_to_json
@@ -41,4 +41,14 @@ def lambda_handler(event, context):
             "type": "APIError",
             "status_code": e.status_code or 500,
             "message": str(e),
+        }
+
+    except S3UploadError as e:
+        return {
+            "status": "error",
+            "type": "S3UploadError",
+            "status_code": e.status_code,
+            "message": e.message,
+            "bucket": bucket,
+            "key": key,
         }
