@@ -132,4 +132,4 @@ def test_error_json(mock_get):
 
     assert result["type"] == "JSONProcessingError"
     assert result["status_code"] == 500
-    assert result["status"] == "Error"
+    assert result["status"] == "error"
