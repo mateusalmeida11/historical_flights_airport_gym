@@ -91,3 +91,18 @@ def test_lambda_data_inicial_maior_que_final():
     assert result["type"] == "IntervaloDataInvalido"
     assert result["status_code"] == 500
     assert result["message"] == "Data Inicial Maior do que a Final"
+
+
+def test_lambda_status_sucess():
+    start_str_date = "01012025"
+    end_str_date = "10012025"
+
+    event = {"date_start": start_str_date, "date_end": end_str_date}
+    context = {}
+
+    result = lambda_handler(event=event, context=context)
+
+    assert result["status"] == "success"
+    assert result["status_code"] == 200
+    assert isinstance(result["data"], list)
+    assert len(result["data"]) == 10
