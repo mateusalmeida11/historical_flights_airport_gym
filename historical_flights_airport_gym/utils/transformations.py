@@ -11,6 +11,12 @@ class JsonProcessingError(Exception):
         self.response_body = response_body
 
 
+class DateOutRangeError(Exception):
+    def __init__(self, message, date_str):
+        super().__init__(message)
+        self.message = f"Data {date_str} fora do intervalo do mes"
+
+
 def from_str_to_json(response: requests.Response):
     try:
         jsonStr = response.json()
@@ -22,5 +28,8 @@ def from_str_to_json(response: requests.Response):
 
 
 def from_str_to_datetime(date: str):
-    date_str_formated = f"{date[:2]}/{date[2:4]}/{date[4:]}"
-    return parser.parse(date_str_formated, dayfirst=True)
+    try:
+        date_str_formated = f"{date[:2]}/{date[2:4]}/{date[4:]}"
+        return parser.parse(date_str_formated, dayfirst=True)
+    except ValueError as e:
+        raise DateOutRangeError(str(e), date_str=date) from e
