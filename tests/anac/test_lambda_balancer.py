@@ -65,9 +65,7 @@ def test_date_out_of_range_lambda():
     start_str_date = "01012025"
     end_str_date = "32012025"
 
-    date_str_formated = (
-        f"{start_str_date[:2]}/{start_str_date[2:4]}/{start_str_date[4:]}"
-    )
+    date_str_formated = f"{end_str_date[:2]}/{end_str_date[2:4]}/{end_str_date[4:]}"
 
     event = {"date_start": start_str_date, "date_end": end_str_date}
     context = {}
