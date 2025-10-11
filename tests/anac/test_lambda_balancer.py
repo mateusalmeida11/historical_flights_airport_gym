@@ -76,3 +76,18 @@ def test_date_out_of_range_lambda():
     assert result["type"] == "DateTransformationError"
     assert result["status_code"] == 500
     assert result["message"] == f"day is out of range for month: {date_str_formated}"
+
+
+def test_lambda_data_inicial_maior_que_final():
+    start_str_date = "01012025"
+    end_str_date = "32012025"
+
+    event = {"date_start": start_str_date, "date_end": end_str_date}
+    context = {}
+
+    result = lambda_handler(event=event, context=context)
+
+    assert result["status"] == "error"
+    assert result["type"] == "IntervaloDataInvalido"
+    assert result["status_code"] == 500
+    assert result["message"] == "Data Inicial Maior do que a Final"
