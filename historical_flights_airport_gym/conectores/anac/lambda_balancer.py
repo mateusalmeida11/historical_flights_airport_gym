@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from historical_flights_airport_gym.utils.transformations import (
     DateTransformationError,
     from_str_to_datetime,
@@ -10,9 +12,13 @@ class IntervaloDataInvalido(Exception):
         self.message = message
 
 
-def criacao_range_data(date_ini, date_end):
+def criacao_range_data(date_ini: datetime, date_end: datetime):
     if date_ini > date_end:
         raise IntervaloDataInvalido("Data Inicial Maior do que a Final")
+
+    num_dias = (date_end - date_ini).days + 1
+    list_datas = [date_ini + timedelta(i) for i in range(num_dias)]
+    return list_datas
 
 
 def lambda_handler(event, context):
@@ -30,7 +36,8 @@ def lambda_handler(event, context):
     try:
         date_ini = from_str_to_datetime(date=start_str_date)
         date_end = from_str_to_datetime(date=end_str_date)
-        criacao_range_data(date_ini=date_ini, date_end=date_end)
+        list_datas = criacao_range_data(date_ini=date_ini, date_end=date_end)
+        return {"status": "success", "status_code": 200, "data": list_datas}
     except DateTransformationError as e:
         return {
             "status": "error",
