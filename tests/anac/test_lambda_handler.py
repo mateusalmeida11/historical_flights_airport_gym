@@ -71,3 +71,4 @@ def test_erro_request_api(mock_get):
 
     assert result["status_code"] == 404
     assert result["type"] == "APIError"
+    assert result["message"] == "HTTP Error 404"
