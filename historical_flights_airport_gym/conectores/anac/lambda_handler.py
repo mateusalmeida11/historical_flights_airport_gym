@@ -62,3 +62,10 @@ def lambda_handler(event, context):
             "status_code": e.status_code,
             "message": str(e),
         }
+    except Exception as e:
+        return {
+            "status": "error",
+            "type": "LambdaError",
+            "status_code": 500,
+            "message": f"Erro Inesperado: {str(e)}",
+        }
