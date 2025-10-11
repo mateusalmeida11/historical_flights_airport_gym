@@ -133,3 +133,34 @@ def test_error_json(mock_get):
     assert result["type"] == "JSONProcessingError"
     assert result["status_code"] == 500
     assert result["status"] == "error"
+
+
+@mock_aws
+@patch("historical_flights_airport_gym.utils.get_data.requests.Session.get")
+@patch("historical_flights_airport_gym.conectores.anac.lambda_handler.lambda_handler")
+def test_error_inesperado(mock_get, mock_handler):
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_get.return_value = mock_response
+
+    mock_unexp = MagicMock()
+    mock_unexp.side_effect = Exception("Memory Size")
+    mock_handler.return_value = mock_unexp
+
+    bucket_name = "etl-brazilian-flights"
+    client = boto3.client("s3", region_name="us-east-1")
+    client.create_bucket(Bucket=bucket_name)
+
+    event = {
+        "layer": "bronze",
+        "bucket": bucket_name,
+        "dt_voo": "01012025",
+    }
+
+    context = {}
+
+    result = lambda_handler(event=event, context=context)
+
+    assert result["status"] == "error"
+    assert result["type"] == "LambdaError"
+    assert result["status_code"] == 500
