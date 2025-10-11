@@ -39,5 +39,6 @@ def lambda_handler(event, context):
         return {
             "status": "error",
             "type": "APIError",
-            "status_code": str(e),
+            "status_code": e.status_code or 500,
+            "message": str(e),
         }
