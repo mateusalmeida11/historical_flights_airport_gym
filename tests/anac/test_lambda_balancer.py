@@ -59,3 +59,22 @@ def test_funcao_de_transformacao_str_para_data_erro_parser():
     e = excinfo.value
 
     assert e.message == f"Unknown string format: {date_str_formated}"
+
+
+def test_date_out_of_range_lambda():
+    start_str_date = "01012025"
+    end_str_date = "32012025"
+
+    date_str_formated = (
+        f"{start_str_date[:2]}/{start_str_date[2:4]}/{start_str_date[4:]}"
+    )
+
+    event = {"date_start": start_str_date, "date_end": end_str_date}
+    context = {}
+
+    result = lambda_handler(event=event, context=context)
+
+    assert result["status"] == "error"
+    assert result["type"] == "DateTransformationError"
+    assert result["status_code"] == 500
+    assert result["message"] == f"day is out of range for month: {date_str_formated}"
