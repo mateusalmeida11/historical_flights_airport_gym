@@ -2,6 +2,7 @@ from unittest.mock import MagicMock, patch
 
 import boto3
 from moto import mock_aws
+from requests.exceptions import HTTPError
 
 from historical_flights_airport_gym.conectores.anac.lambda_handler import lambda_handler
 
@@ -33,3 +34,40 @@ def test_success_connect_data_and_upload_s3(mock_get):
     assert result["status"] == "success"
     assert result["bucket"] == bucket_name
     assert result["s3_response"]["status_code"] == 200
+
+
+@mock_aws
+@patch("historical_flights_airport_gym.utils.get_data.requests.Session.get")
+def test_erro_request_api(mock_get):
+    mock_response = MagicMock()
+    mock_response.status_code = 404
+    mock_response.text = """
+    <!DOCTYPE html>
+    <html>
+      <head><title>The resource cannot be found.</title></head>
+      <body>
+        <h1>Server Error in '/sas/vra_api' Application.</h1>
+        <h2>The resource cannot be found.</h2>
+        <p>Requested URL: /sas/vra_api/vra/airport</p>
+      </body>
+    </html>
+    """
+    mock_response.raise_for_status.side_effect = HTTPError(response=mock_response)
+    mock_get.return_value = mock_response
+
+    bucket_name = "etl-brazilian-flights"
+    client = boto3.client("s3", region_name="us-east-1")
+    client.create_bucket(Bucket=bucket_name)
+
+    event = {
+        "layer": "bronze",
+        "bucket": bucket_name,
+        "dt_voo": "01012025",
+    }
+
+    context = {}
+
+    result = lambda_handler(event=event, context=context)
+
+    assert result["status_code"] == 404
+    assert result["type"] == "APIError"
