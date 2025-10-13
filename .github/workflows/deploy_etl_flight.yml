@@ -48,7 +48,7 @@ jobs:
             - name: Terraform ECR Apply
               run: |
                   cd ecr-module &&
-                  terraform apply
+                  terraform apply -auto-aprove
 
             - name: GET_ECR_URI
               run: |
