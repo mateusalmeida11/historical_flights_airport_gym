@@ -37,7 +37,8 @@ def lambda_handler(event, context):
         date_ini = from_str_to_datetime(date=start_str_date)
         date_end = from_str_to_datetime(date=end_str_date)
         list_datas = criacao_range_data(date_ini=date_ini, date_end=date_end)
-        return {"status": "success", "status_code": 200, "data": list_datas}
+        list_data_str = [date_str.strftime("%d%m%Y") for date_str in list_datas]
+        return {"status": "success", "status_code": 200, "data": list_data_str}
     except DateTransformationError as e:
         return {
             "status": "error",
