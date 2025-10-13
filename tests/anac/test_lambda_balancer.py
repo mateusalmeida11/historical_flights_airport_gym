@@ -106,3 +106,4 @@ def test_lambda_status_sucess():
     assert result["status_code"] == 200
     assert isinstance(result["data"], list)
     assert len(result["data"]) == 10
+    assert isinstance(result["data"][0], str)
