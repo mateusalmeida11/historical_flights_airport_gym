@@ -55,4 +55,3 @@ jobs:
               run: |
                   IMAGE_URI=$(cd ecr-module && terraform output -raw ecr_repository_url)
                   echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
-                  print(IMAGE_URI)
