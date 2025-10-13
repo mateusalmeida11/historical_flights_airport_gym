@@ -50,7 +50,9 @@ jobs:
                   cd ecr-module &&
                   terraform apply -auto-approve
 
-            - name: GET_ECR_URI
+            - name: GET ECR URI
+              id: get_image_uri
               run: |
                   IMAGE_URI=$(cd ecr-module && terraform output -raw ecr_repository_url)
+                  echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
                   print(IMAGE_URI)
