@@ -107,3 +107,5 @@ def test_lambda_status_sucess():
     assert isinstance(result["data"], list)
     assert len(result["data"]) == 10
     assert isinstance(result["data"][0], str)
+    assert result["data"][0] == start_str_date
+    assert result["data"][-1] == end_str_date
