@@ -56,6 +56,12 @@ jobs:
                   IMAGE_URI=$(cd ecr-module && terraform output -raw ecr_repository_url)
                   echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
 
+            - name: SET REGISTRY URI
+              id: set_registry_uri
+              run: |
+                  REGISTRY_URI=$(echo $IMAGE_URI | cut -d '/', -f1)
+                  echo "REGISTRY_URI=$REGISTRY_URI" >> $GITHUB_ENV
+
             - name: Build Docker Image
               run: docker build -t $IMAGE_URI:$IMAGE_TAG .
 
