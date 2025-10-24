@@ -59,7 +59,7 @@ jobs:
             - name: SET REGISTRY URI
               id: set_registry_uri
               run: |
-                  REGISTRY_URI=$(echo $IMAGE_URI | cut -d '/', -f1)
+                  REGISTRY_URI=$(echo $IMAGE_URI | cut -d '/' -f1)
                   echo "REGISTRY_URI=$REGISTRY_URI" >> $GITHUB_ENV
 
             - name: Build Docker Image
