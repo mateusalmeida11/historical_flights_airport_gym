@@ -50,9 +50,16 @@ jobs:
                   cd ecr-module &&
                   terraform apply -auto-approve
 
-            - name: GET ECR URI
+            - name: GET ECR IMAGE URI
               id: get_image_uri
               run: |
                   IMAGE_URI=$(cd ecr-module && terraform output -raw ecr_repository_url)
                   echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
-                  echo "O valor de image_uri é: $IMAGE_URI"
+
+            - name: Build Docker Image
+              run: docker build -t $IMAGE_URI:$IMAGE_TAG
+
+            - name: Push Docker Image
+              run: |
+                  aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REGISTRY_URI
+                  docker push $IMAGE_URI:$IMAGE_TAG
