@@ -57,7 +57,7 @@ jobs:
                   echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
 
             - name: Build Docker Image
-              run: docker build -t $IMAGE_URI:$IMAGE_TAG
+              run: docker build -t $IMAGE_URI:$IMAGE_TAG .
 
             - name: Push Docker Image
               run: |
