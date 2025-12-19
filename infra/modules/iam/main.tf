@@ -19,7 +19,7 @@ resource "aws_iam_role" "role_lambda_flights" {
 
 #2. -------------- Lambda Policies ------------------------------
 
-resource "aws_iam_police" "policy_get_access_s3" {
+resource "aws_iam_policy" "policy_get_access_s3" {
     name = var.name_policy_get_access_s3
 
     policy = jsonencode({
@@ -47,5 +47,5 @@ resource "aws_iam_role_policy_attachment" "attach_cloudwatch_logs_policy" {
 
 resource "aws_iam_role_policy_attachment" "attach_s3_access_policy" {
     role = aws_iam_role.role_lambda_flights.name
-    policy_arn = aws_iam_police.policy_get_access_s3.arn
+    policy_arn = aws_iam_policy.policy_get_access_s3.arn
 }
