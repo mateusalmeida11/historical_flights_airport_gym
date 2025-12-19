@@ -119,4 +119,5 @@ jobs:
                 cd infra &&
                 terraform apply \
                   -var="ecr_repository_url=$IMAGE_URI" \
-                  -var="image_tag=$IMAGE_TAG"
+                  -var="image_tag=$IMAGE_TAG" \
+                  -auto-approve
