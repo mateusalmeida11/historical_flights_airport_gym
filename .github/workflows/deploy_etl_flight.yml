@@ -14,8 +14,8 @@ jobs:
         env:
             AWS_DEFAULT_REGION: us-east-1
         outputs:
-          image_tag: ${{ steps.set_image_tag.image_tag }}
-          image_uri: ${{ steps.get_image_uri.image_uri }}
+          image_tag: ${{ steps.set_image_tag.outputs.image_tag }}
+          image_uri: ${{ steps.get_image_uri.outputs.image_uri }}
         defaults:
             run:
               shell: bash
