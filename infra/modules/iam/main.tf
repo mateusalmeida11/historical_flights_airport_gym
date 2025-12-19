@@ -4,7 +4,7 @@ resource "aws_iam_role" "role_lambda_flights" {
     name=var.iam_role_name_lambda
 
     assume_role_policy = jsonencode({
-        version="2012-10-17"
+        Version="2012-10-17"
         Statement = [
             {
                 Action = "sts:AssumeRole",
