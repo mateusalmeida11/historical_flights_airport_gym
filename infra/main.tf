@@ -13,6 +13,6 @@ module "aws_lambda_extract" {
     lambda_execution_role_flights_arn = module.iam.lambda_arn_etl_flights
     ecr_repository_url = var.ecr_repository_url
     image_tag = var.image_tag
-    command_aws_lambda_flights = "historical_flights_airport_gym.conectores.anac.lambda_handler"
+    command_aws_lambda_flights = "historical_flights_airport_gym.conectores.anac.lambda_handler.lambda_handler"
 
 }
