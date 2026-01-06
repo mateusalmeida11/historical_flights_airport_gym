@@ -32,7 +32,7 @@ resource "aws_iam_policy" "policy_get_access_s3" {
                     "s3:DeleteObject"
                 ]
                 Effect = "Allow"
-                Resource = var.bucket_s3_etl_arn
+                Resource = "${var.bucket_s3_etl_arn}/*"
             }
         ]
     })
