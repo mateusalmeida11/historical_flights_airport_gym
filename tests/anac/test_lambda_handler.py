@@ -2,6 +2,7 @@ import json
 from unittest.mock import MagicMock, patch
 
 import boto3
+import pytest
 from moto import mock_aws
 from requests.exceptions import HTTPError
 
@@ -68,11 +69,12 @@ def test_erro_request_api(mock_get):
 
     context = {}
 
-    result = lambda_handler(event=event, context=context)
+    with pytest.raises(Exception) as excinfo:
+        lambda_handler(event=event, context=context)
 
-    assert result["status_code"] == 404
-    assert result["type"] == "APIError"
-    assert result["message"] == "HTTP Error 404"
+    e_message = str(excinfo.value)
+    assert "APIError" in e_message
+    assert "404" in e_message
 
 
 @mock_aws
