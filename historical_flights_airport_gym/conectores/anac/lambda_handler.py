@@ -39,12 +39,15 @@ def lambda_handler(event, context):
         }
 
     except RequestError as e:
-        return {
+        error_data = {
             "status": "error",
             "type": "APIError",
             "status_code": e.status_code or 500,
             "message": str(e),
         }
+        raise Exception(
+            f"error_type: {error_data["type"]} - detalhamento: {error_data['message']}"
+        ) from e
 
     except S3UploadError as e:
         return {
