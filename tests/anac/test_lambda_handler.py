@@ -131,11 +131,12 @@ def test_error_json(mock_get):
 
     context = {}
 
-    result = lambda_handler(event=event, context=context)
+    with pytest.raises(Exception) as excinfo:
+        lambda_handler(event=event, context=context)
 
-    assert result["type"] == "JSONProcessingError"
-    assert result["status_code"] == 500
-    assert result["status"] == "error"
+    e_message = str(excinfo.value)
+
+    assert "JSONProcessingError" in e_message
 
 
 @mock_aws
@@ -162,8 +163,9 @@ def test_error_inesperado(mock_get, mock_handler):
 
     context = {}
 
-    result = lambda_handler(event=event, context=context)
+    with pytest.raises(Exception) as excinfo:
+        lambda_handler(event=event, context=context)
 
-    assert result["status"] == "error"
-    assert result["type"] == "LambdaError"
-    assert result["status_code"] == 500
+    e_message = str(excinfo.value)
+
+    assert "LambdaError" in e_message
