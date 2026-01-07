@@ -63,16 +63,22 @@ def lambda_handler(event, context):
         ) from e
 
     except JsonProcessingError as e:
-        return {
+        error_data = {
             "status": "error",
             "type": "JSONProcessingError",
             "status_code": e.status_code,
             "message": str(e),
         }
+        raise Exception(
+            f"error_type: {error_data["type"]} - detalhamento: {error_data['message']}"
+        ) from e
     except Exception as e:
-        return {
+        error_data = {
             "status": "error",
             "type": "LambdaError",
             "status_code": 500,
             "message": f"Erro Inesperado: {str(e)}",
         }
+        raise Exception(
+            f"error_type: {error_data["type"]} - detalhamento: {error_data['message']}"
+        ) from e
