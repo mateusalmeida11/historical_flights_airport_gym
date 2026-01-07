@@ -98,12 +98,13 @@ def test_upload_s3(mock_get):
 
     context = {}
 
-    result = lambda_handler(event=event, context=context)
+    with pytest.raises(Exception) as excinfo:
+        lambda_handler(event=event, context=context)
 
-    assert result["type"] == "S3UploadError"
-    assert result["status_code"] == 404
-    assert result["bucket"] == bucket_name
-    assert result["message"] == "The specified bucket does not exist"
+    e_message = str(excinfo.value)
+
+    assert "S3UploadError" in e_message
+    assert "bucket does not exist" in e_message
 
 
 @mock_aws
