@@ -50,7 +50,7 @@ def lambda_handler(event, context):
         ) from e
 
     except S3UploadError as e:
-        return {
+        error_data = {
             "status": "error",
             "type": "S3UploadError",
             "status_code": e.status_code,
@@ -58,6 +58,10 @@ def lambda_handler(event, context):
             "bucket": bucket,
             "key": key,
         }
+        raise Exception(
+            f"error_type: {error_data["type"]} - detalhamento: {error_data['message']}"
+        ) from e
+
     except JsonProcessingError as e:
         return {
             "status": "error",
