@@ -12,7 +12,10 @@ class S3UploadError(Exception):
 
 
 class S3GetError(Exception):
-    pass
+    def __init__(self, message, status_code=None):
+        super().__init__(message)
+        self.message = message
+        self.status_code = status_code
 
 
 class S3:
@@ -49,5 +52,11 @@ class S3:
                 status_code=e.response["ResponseMetadata"]["HTTPStatusCode"],
             ) from e
 
-    def get_file(self):
-        pass
+    def get_file(self, bucket_name, key):
+        try:
+            self.s3_client.get_object(Bucket=bucket_name, Key=key)
+        except ClientError as e:
+            raise S3GetError(
+                e.response["Error"]["Message"],
+                status_code=e.response["ResponseMetadata"]["HTTPStatusCode"],
+            ) from e
