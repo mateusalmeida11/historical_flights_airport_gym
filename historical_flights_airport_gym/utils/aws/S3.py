@@ -54,7 +54,8 @@ class S3:
 
     def get_file(self, bucket_name, key):
         try:
-            self.s3_client.get_object(Bucket=bucket_name, Key=key)
+            response = self.s3_client.get_object(Bucket=bucket_name, Key=key)
+            return response["Body"]
         except ClientError as e:
             raise S3GetError(
                 e.response["Error"]["Message"],
