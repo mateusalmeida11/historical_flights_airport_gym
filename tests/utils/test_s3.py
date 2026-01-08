@@ -4,7 +4,7 @@ import boto3
 import pytest
 from moto import mock_aws
 
-from historical_flights_airport_gym.utils.aws.S3 import S3, S3UploadError
+from historical_flights_airport_gym.utils.aws.S3 import S3, S3GetError, S3UploadError
 
 
 @mock_aws
@@ -87,5 +87,21 @@ def test_upload_s3_inexistente():
         s3.upload_file(data=jsonData, bucket=bucket_name, key=key)
 
     e = excinfo.value
+    assert e.status_code == 404
+    assert e.message == "The specified bucket does not exist"
+
+
+@mock_aws
+def test_get_object_bucket():
+    bucket_name = "bucket-inexistente"
+    key = "staging/2025_10_06_123456789_0.json"
+
+    boto3.client("s3", region_name="us-east-1")
+
+    with pytest.raises(S3GetError) as excinfo:
+        s3 = S3()
+        s3.get_file(bucket_name=bucket_name, key=key)
+    e = excinfo.value
+
     assert e.status_code == 404
     assert e.message == "The specified bucket does not exist"
