@@ -4,6 +4,9 @@ A Camada Bronze pegará o caminho do arquivo gerado pelo processo de ingestão.
 A lambda receberá como Payload o nome do Bucket e a Key do arquivo.
 
 A primeira validação é se o Bucket e Key são elementos válidos.
+
+A validade desse arquivo consiste em ele ser do tipo botocore.response.StreamingBody
+
 Sendo esses elementos válidos, iniciaremos o processamento desse arquivo.
 
 O processamento final precisará gerar um dataframe com o mesmo número de linhas
