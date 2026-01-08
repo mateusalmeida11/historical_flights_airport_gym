@@ -24,6 +24,12 @@ class S3EmptyFile(Exception):
         self.message = message
 
 
+class S3WithoutBodyResponse(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+        self.message = message
+
+
 class S3:
     def __init__(self):
         self.s3_client = self.create_client()
@@ -68,6 +74,11 @@ class S3:
             ) from e
 
         lenght = int(response["ResponseMetadata"]["HTTPHeaders"]["content-length"])
+        body = response.get("Body", None)
         if lenght <= 0:
             raise S3EmptyFile("Empty File")
-        return response["Body"]
+
+        if not body:
+            raise S3WithoutBodyResponse("Without Body in Response")
+
+        return body
