@@ -92,7 +92,7 @@ def test_upload_s3_inexistente():
 
 
 @mock_aws
-def test_get_object_bucket():
+def test_get_object_bucket_inexistente():
     bucket_name = "bucket-inexistente"
     key = "staging/2025_10_06_123456789_0.json"
 
