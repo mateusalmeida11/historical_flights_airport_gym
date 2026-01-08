@@ -11,6 +11,10 @@ class S3UploadError(Exception):
         self.status_code = status_code
 
 
+class S3GetError(Exception):
+    pass
+
+
 class S3:
     def __init__(self):
         self.s3_client = self.create_client()
@@ -44,3 +48,6 @@ class S3:
                 e.response["Error"]["Message"],
                 status_code=e.response["ResponseMetadata"]["HTTPStatusCode"],
             ) from e
+
+    def get_file(self):
+        pass
