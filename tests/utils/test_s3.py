@@ -5,7 +5,12 @@ import pytest
 from botocore.response import StreamingBody
 from moto import mock_aws
 
-from historical_flights_airport_gym.utils.aws.S3 import S3, S3GetError, S3UploadError
+from historical_flights_airport_gym.utils.aws.S3 import (
+    S3,
+    S3EmptyFile,
+    S3GetError,
+    S3UploadError,
+)
 
 
 @mock_aws
@@ -148,3 +153,20 @@ def test_get_object_bucket_success():
     response = s3.get_file(bucket_name=bucket_name, key=key)
 
     assert isinstance(response, StreamingBody)
+
+
+@mock_aws
+def test_get_object_response_empty_file():
+    bucket_name = "etl-brazilian-flights"
+    key = "staging/2025_10_06_123456789_0.json"
+    client = boto3.client("s3", region_name="us-east-1")
+
+    client.create_bucket(Bucket=bucket_name)
+    s3 = S3()
+    s3.upload_file(data=b"", bucket=bucket_name, key=key)
+
+    with pytest.raises(S3EmptyFile) as excinfo:
+        s3.get_file(bucket_name=bucket_name, key=key)
+
+    e = excinfo.value
+    assert e.message == "Empty File"
