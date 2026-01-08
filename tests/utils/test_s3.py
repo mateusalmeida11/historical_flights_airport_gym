@@ -1,4 +1,5 @@
 import json
+from unittest.mock import MagicMock, patch
 
 import boto3
 import pytest
@@ -10,6 +11,7 @@ from historical_flights_airport_gym.utils.aws.S3 import (
     S3EmptyFile,
     S3GetError,
     S3UploadError,
+    S3WithoutBodyResponse,
 )
 
 
@@ -170,3 +172,21 @@ def test_get_object_response_empty_file():
 
     e = excinfo.value
     assert e.message == "Empty File"
+
+
+@patch("historical_flights_airport_gym.utils.aws.S3.boto3.client")
+def test_get_object_response_withou_body_in_response(mock_boto_client):
+    mock_response = MagicMock()
+    mock_response.get_object.return_value = {
+        "ResponseMetadata": {"HTTPHeaders": {"content-length": "10"}}
+    }
+
+    mock_boto_client.return_value = mock_response
+    s3 = S3()
+    bucket_name = "etl-brazilian-flights"
+    key = "staging/2025_10_06_123456789_0.json"
+    with pytest.raises(S3WithoutBodyResponse) as excinfo:
+        s3.get_file(bucket_name=bucket_name, key=key)
+
+    e = excinfo.value
+    assert e.message == "Without Body in Response"
