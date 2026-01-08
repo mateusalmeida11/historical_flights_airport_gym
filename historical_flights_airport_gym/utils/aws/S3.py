@@ -18,6 +18,12 @@ class S3GetError(Exception):
         self.status_code = status_code
 
 
+class S3EmptyFile(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+        self.message = message
+
+
 class S3:
     def __init__(self):
         self.s3_client = self.create_client()
@@ -55,9 +61,13 @@ class S3:
     def get_file(self, bucket_name, key):
         try:
             response = self.s3_client.get_object(Bucket=bucket_name, Key=key)
-            return response["Body"]
         except ClientError as e:
             raise S3GetError(
                 e.response["Error"]["Message"],
                 status_code=e.response["ResponseMetadata"]["HTTPStatusCode"],
             ) from e
+
+        lenght = int(response["ResponseMetadata"]["HTTPHeaders"]["content-length"])
+        if lenght <= 0:
+            raise S3EmptyFile("Empty File")
+        return response["Body"]
