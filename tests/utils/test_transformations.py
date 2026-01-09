@@ -68,7 +68,10 @@ def test_add_metadata_extraction_success(mock_get):
     response = get_data(url=url, params=params)
     responseJson = from_str_to_json(response=response)
 
-    data_with_metadata = add_metadata_to_json(records=responseJson)
+    data_with_metadata = add_metadata_to_json(
+        records=responseJson, source_system="anac", schema_version="1.0"
+    )
+
     metadata = data_with_metadata.get("metadata")
 
     assert "metadata" in data_with_metadata
@@ -91,7 +94,10 @@ def test_add_metadata_extraction_content_feature_metadata(mock_get):
     response = get_data(url=url, params=params)
     responseJson = from_str_to_json(response=response)
 
-    data_with_metadata = add_metadata_to_json(records=responseJson)
+    data_with_metadata = add_metadata_to_json(
+        records=responseJson, source_system="anac", schema_version="1.0"
+    )
+
     metadata = data_with_metadata.get("metadata")
 
     features_expected = [
