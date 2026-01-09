@@ -69,6 +69,8 @@ def test_add_metadata_extraction_success(mock_get):
     responseJson = from_str_to_json(response=response)
 
     data_with_metadata = add_metadata_to_json(records=responseJson)
+    metadata = data_with_metadata.get("metadata")
 
     assert "metadata" in data_with_metadata
+    assert len(metadata) > 0
     assert "content" in data_with_metadata
