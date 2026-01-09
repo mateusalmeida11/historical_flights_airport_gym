@@ -74,3 +74,33 @@ def test_add_metadata_extraction_success(mock_get):
     assert "metadata" in data_with_metadata
     assert len(metadata) > 0
     assert "content" in data_with_metadata
+
+
+@patch("historical_flights_airport_gym.utils.get_data.requests.Session.get")
+def test_add_metadata_extraction_content_feature_metadata(mock_get):
+    # mockar um conteudo de teste
+    mock_response = MagicMock()
+    json_str_response = '[{"sg_empresa_icao":"AAL"}]'
+    mock_response.status_code = 200
+    mock_response.json.return_value = json_str_response
+    mock_get.return_value = mock_response
+
+    url = "https://sas.anac.gov.br/sas/vra_api/vra/data?"
+    params = {"dt_voo": "01012025"}
+
+    response = get_data(url=url, params=params)
+    responseJson = from_str_to_json(response=response)
+
+    data_with_metadata = add_metadata_to_json(records=responseJson)
+    metadata = data_with_metadata.get("metadata")
+
+    features_expected = [
+        "extraction_id",
+        "source_system",
+        "extraction_timestamp",
+        "record_count",
+        "schema_version",
+    ]
+
+    for feature in features_expected:
+        assert feature in metadata
