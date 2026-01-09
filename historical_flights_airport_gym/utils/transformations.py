@@ -1,7 +1,10 @@
 import json
+import uuid
+from datetime import datetime
 
 import requests
 from dateutil import parser
+from zoneinfo import ZoneInfo
 
 
 class JsonProcessingError(Exception):
@@ -36,6 +39,19 @@ def from_str_to_datetime(date: str):
         raise DateTransformationError(str(e), date_str=date) from e
 
 
-def add_metadata_to_json(records):
+def add_metadata_to_json(records, source_system, schema_version):
     record_count = len(records)
-    return {"metadata": {"recourd_count": record_count}, "content": records}
+    extraction_id = uuid.uuid4().int >> 64
+
+    fuso_sp = ZoneInfo("America/Sao_Paulo")
+    extraction_ts = datetime.now(fuso_sp).strftime("%Y-%m-%dT%H:%M:%S")
+    return {
+        "metadata": {
+            "extraction_id": extraction_id,
+            "record_count": record_count,
+            "extraction_timestamp": extraction_ts,
+            "source_system": source_system,
+            "schema_version": schema_version,
+        },
+        "content": records,
+    }
