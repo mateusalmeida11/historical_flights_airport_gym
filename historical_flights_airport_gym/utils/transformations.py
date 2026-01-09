@@ -37,4 +37,5 @@ def from_str_to_datetime(date: str):
 
 
 def add_metadata_to_json(records):
-    return {"metadata": [], "content": records}
+    record_count = len(records)
+    return {"metadata": {"recourd_count": record_count}, "content": records}
