@@ -34,3 +34,7 @@ def from_str_to_datetime(date: str):
         return date_convertida
     except ValueError as e:
         raise DateTransformationError(str(e), date_str=date) from e
+
+
+def add_metadata_to_json(records):
+    return {"metadata": [], "content": records}
