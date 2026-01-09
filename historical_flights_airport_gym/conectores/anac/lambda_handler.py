@@ -5,6 +5,7 @@ from historical_flights_airport_gym.utils.build_path import path_file_raw
 from historical_flights_airport_gym.utils.get_data import RequestError, get_data
 from historical_flights_airport_gym.utils.transformations import (
     JsonProcessingError,
+    add_metadata_to_json,
     from_str_to_json,
 )
 
@@ -24,7 +25,10 @@ def lambda_handler(event, context):
         params = {"dt_voo": dt_voo}
 
         response = get_data(url=url, params=params)
-        jsonObj = from_str_to_json(response=response)
+        records = from_str_to_json(response=response)
+        jsonObj = add_metadata_to_json(
+            records=records, source_system="anac", schema_version="1.0"
+        )
         jsonData = json.dumps(jsonObj, indent=4)
 
         response_s3 = s3.upload_file(bucket=bucket, data=jsonData, key=key)
