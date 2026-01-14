@@ -37,7 +37,7 @@ class S3:
     def create_client(self):
         access_key = os.environ.get("ACCESS_KEY")
         secret_access_key = os.environ.get("SECRET_ACCESS_KEY")
-        region = os.environ.get("REGION", "us-east-1")
+        region = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
 
         if access_key and secret_access_key:
             return boto3.client(
