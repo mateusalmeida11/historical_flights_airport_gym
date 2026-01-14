@@ -31,8 +31,8 @@ class S3WithoutBodyResponse(Exception):
 
 
 class S3:
-    def __init__(self):
-        self.s3_client = self.create_client()
+    def __init__(self, s3_client=None):
+        self.s3_client = s3_client or self.create_client()
 
     def create_client(self):
         access_key = os.environ.get("ACCESS_KEY")
