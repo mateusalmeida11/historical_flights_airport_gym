@@ -1,23 +1,9 @@
 import json
-import os
 
 import boto3
-import pytest
 
 from historical_flights_airport_gym.soda.check_function import check
 from historical_flights_airport_gym.utils.aws.S3 import S3
-
-
-@pytest.fixture(scope="session", autouse=True)
-def setup_localstack():
-    os.environ["AWS_ACCESS_KEY_ID"] = "test"
-    os.environ["AWS_SECRET_ACCESS_KEY"] = "test"
-    os.environ["AWS_DEFAULT_REGION"] = "us-east-1"
-
-    s3 = boto3.client("s3", endpoint_url="http://localhost:4566")
-
-    s3.create_bucket(Bucket="mateus-us-east-1-etl-flights")
-    yield
 
 
 def teste_data_quality_staging_to_bronze_source_anac_success():
