@@ -6,6 +6,7 @@ from duckdb import DuckDBPyConnection
 
 from historical_flights_airport_gym.utils.aws.S3 import S3
 from historical_flights_airport_gym.utils.duckdb.connect_duckdb import (
+    DuckDBErrorNotFindKey,
     DuckDBHTTPError,
     DuckDBManager,
 )
@@ -106,3 +107,34 @@ def test_raise_error_missing_credential_duckdb_aws():
 
     e = excinfo.value
     assert "HTTP Error" in e.message
+
+
+def test_raise_binder_error_query_duckdb():
+    # 1. criando nome do bucket e key
+    bucket_name = "mateus-us-east-1-etl-flights"
+    key = "staging/2025_10_06_123456789_0.json"
+
+    # 2. Chamando funcao de upload
+    mock_upload_s3(bucket_name=bucket_name, key=key)
+
+    # 3. Fazer a Query
+    uri_bucket = f"s3://{bucket_name}/{key}"
+    query = f"""
+    CREATE TABLE IF NOT EXISTS flights AS
+    SELECT
+        content.qualquer_coluna
+    FROM
+        (
+            SELECT
+                unnest(content) AS content
+            FROM
+                read_json('{uri_bucket}')
+        ) AS json_content;
+    """
+    db = DuckDBManager()
+    with pytest.raises(DuckDBErrorNotFindKey) as excinfo:
+        db.make_query(query)
+
+    e = excinfo.value
+    assert "Bind Error" in e.message
+    assert "qualquer coluna" in e.message
