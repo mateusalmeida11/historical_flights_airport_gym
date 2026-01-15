@@ -1,8 +1,14 @@
+import json
+
 import boto3
 import pytest
-from duckdb import DuckDBPyConnection, HTTPException
+from duckdb import DuckDBPyConnection
 
-from historical_flights_airport_gym.utils.duckdb.connect_duckdb import DuckDBManager
+from historical_flights_airport_gym.utils.aws.S3 import S3
+from historical_flights_airport_gym.utils.duckdb.connect_duckdb import (
+    DuckDBHTTPError,
+    DuckDBManager,
+)
 
 
 def create_conexao_localstack():
@@ -30,8 +36,65 @@ def test_setup_inicial_aws():
 
 
 def test_raise_error_missing_credential_duckdb_aws():
-    with pytest.raises(HTTPException) as excinfo:
-        DuckDBManager()
+    # 1. Mockar Bucket S3 na AWS
+    bucket_name = "mateus-us-east-1-etl-flights"
+    key = "staging/2025_10_06_123456789_0.json"
+
+    s3_client = create_conexao_localstack()
+    s3_client.create_bucket(Bucket=bucket_name)
+
+    body = {
+        "metada": {},
+        "content": [
+            {
+                "sg_empresa_icao": "AAL",
+                "nm_empresa": "AMERICAN AIRLINES, INC.",
+                "nr_voo": "0904",
+                "cd_di": "0",
+                "cd_tipo_linha": "I",
+                "sg_equipamento_icao": "B772",
+                "nr_assentos_ofertados": "288",
+                "sg_icao_origem": "SBGL",
+                "nm_aerodromo_origem": "AEROPORTO INTERNACIONAL DO RIO DE JANEIRO (GALEÃO) - ANTONIO CARLOS JOBIM - RIO DE JANEIRO - RJ - BRASIL",
+                "dt_partida_prevista": "20/11/2025 23:55",
+                "dt_partida_real": "20/11/2025 23:48",
+                "sg_icao_destino": "KMIA",
+                "nm_aerodromo_destino": "MIAMI INTERNATIONAL AIRPORT - MIAMI, FLORIDA - ESTADOS UNIDOS DA AMÉRICA",
+                "dt_chegada_prevista": "21/11/2025 08:40",
+                "dt_chegada_real": "21/11/2025 08:31",
+                "ds_situacao_voo": "REALIZADO",
+                "ds_justificativa": "",
+                "dt_referencia": "20/11/2025",
+                "ds_situacao_partida": "Antecipado",
+                "ds_situacao_chegada": "Antecipado",
+            },
+        ],
+    }
+
+    jsonData = json.dumps(body, indent=4)
+
+    # 2. Upload para o S3
+    s3 = S3(s3_client=s3_client)
+    s3.upload_file(data=jsonData, bucket=bucket_name, key=key)
+
+    # 3. Fazer a Query
+    uri_bucket = f"s3://{bucket_name}/{key}"
+    query = f"""
+    CREATE TABLE IF NOT EXISTS flights AS
+    SELECT
+        content.*
+    FROM
+        (
+            SELECT
+                unnest(content) AS content
+            FROM
+                read_json('{uri_bucket}')
+        ) AS json_content;
+    """
+
+    db = DuckDBManager()
+    with pytest.raises(DuckDBHTTPError) as excinfo:
+        db.make_query(query)
 
     e = excinfo.value
-    assert "HTTP Error" in e
+    assert "HTTP Error" in e.message
