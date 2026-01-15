@@ -1,4 +1,5 @@
 import duckdb
+from duckdb import HTTPException
 
 
 class DuckDBHTTPError(Exception):
@@ -41,4 +42,7 @@ class DuckDBManager:
             )
 
     def make_query(self, query):
-        self.conn.sql(query)
+        try:
+            self.conn.sql(query)
+        except HTTPException as e:
+            raise DuckDBHTTPError(str(e)) from e
