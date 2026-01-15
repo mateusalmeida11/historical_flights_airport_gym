@@ -15,6 +15,7 @@ def create_conexao_localstack():
 
 
 def test_conexao_duckdb_s3_success():
-    conn = DuckDBManager()
+    duck = DuckDBManager()
+    conn = duck.conn
 
     assert isinstance(conn, DuckDBPyConnection)
