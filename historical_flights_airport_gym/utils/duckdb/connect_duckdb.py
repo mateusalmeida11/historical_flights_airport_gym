@@ -1,8 +1,14 @@
 import duckdb
-from duckdb import HTTPException
+from duckdb import BinderException, HTTPException
 
 
 class DuckDBHTTPError(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+        self.message = message
+
+
+class DuckDBErrorNotFindKey(Exception):
     def __init__(self, message):
         super().__init__(message)
         self.message = message
@@ -27,7 +33,7 @@ class DuckDBManager:
                               REGION 'us-east-1',
                               ENDPOINT '{self.s3_endpoint}',
                               URL_STYLE 'path',
-                              USE SSL 'false'
+                              USE_SSL 'false'
                               )
                               """
             )
@@ -46,3 +52,5 @@ class DuckDBManager:
             self.conn.sql(query)
         except HTTPException as e:
             raise DuckDBHTTPError(str(e)) from e
+        except BinderException as e:
+            raise DuckDBErrorNotFindKey(str(e)) from e
