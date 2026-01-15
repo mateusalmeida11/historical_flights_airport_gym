@@ -1,5 +1,6 @@
 import boto3
-from duckdb import DuckDBPyConnection
+import pytest
+from duckdb import DuckDBPyConnection, HTTPException
 
 from historical_flights_airport_gym.utils.duckdb.connect_duckdb import DuckDBManager
 
@@ -26,3 +27,11 @@ def test_setup_inicial_aws():
     result = duck._conect_aws()
 
     assert result is None
+
+
+def test_raise_error_missing_credential_duckdb_aws():
+    with pytest.raises(HTTPException) as excinfo:
+        DuckDBManager()
+
+    e = excinfo.value
+    assert "HTTP Error" in e
