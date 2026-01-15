@@ -119,10 +119,11 @@ def test_raise_binder_error_query_duckdb():
 
     # 3. Fazer a Query
     uri_bucket = f"s3://{bucket_name}/{key}"
+    column_missing = "qualquer_coluna"
     query = f"""
     CREATE TABLE IF NOT EXISTS flights AS
     SELECT
-        content.qualquer_coluna
+        content.{column_missing}
     FROM
         (
             SELECT
@@ -131,10 +132,10 @@ def test_raise_binder_error_query_duckdb():
                 read_json('{uri_bucket}')
         ) AS json_content;
     """
-    db = DuckDBManager()
+    db = DuckDBManager(s3_endpoint="localhost:4566")
     with pytest.raises(DuckDBErrorNotFindKey) as excinfo:
         db.make_query(query)
 
     e = excinfo.value
-    assert "Bind Error" in e.message
-    assert "qualquer coluna" in e.message
+    assert "Binder Error" in e.message
+    assert column_missing in e.message
