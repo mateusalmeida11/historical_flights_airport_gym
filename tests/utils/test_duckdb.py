@@ -21,28 +21,12 @@ def create_conexao_localstack():
     )
 
 
-def test_conexao_duckdb_s3_success():
-    duck = DuckDBManager()
-    conn = duck.conn
-
-    assert isinstance(conn, DuckDBPyConnection)
-
-
-def test_setup_inicial_aws():
-    duck = DuckDBManager()
-    result = duck._conect_aws()
-
-    assert result is None
-
-
-def test_raise_error_missing_credential_duckdb_aws():
-    # 1. Mockar Bucket S3 na AWS
-    bucket_name = "mateus-us-east-1-etl-flights"
-    key = "staging/2025_10_06_123456789_0.json"
-
+def mock_upload_s3(bucket_name, key):
+    # estabelecendo conexao com localstack
     s3_client = create_conexao_localstack()
     s3_client.create_bucket(Bucket=bucket_name)
 
+    # criando arquivo de amostra
     body = {
         "metada": {},
         "content": [
@@ -77,6 +61,29 @@ def test_raise_error_missing_credential_duckdb_aws():
     s3 = S3(s3_client=s3_client)
     s3.upload_file(data=jsonData, bucket=bucket_name, key=key)
 
+
+def test_conexao_duckdb_s3_success():
+    duck = DuckDBManager()
+    conn = duck.conn
+
+    assert isinstance(conn, DuckDBPyConnection)
+
+
+def test_setup_inicial_aws():
+    duck = DuckDBManager()
+    result = duck._conect_aws()
+
+    assert result is None
+
+
+def test_raise_error_missing_credential_duckdb_aws():
+    # 1. criando nome do bucket e key
+    bucket_name = "mateus-us-east-1-etl-flights"
+    key = "staging/2025_10_06_123456789_0.json"
+
+    # 2. Chamando funcao de upload
+    mock_upload_s3()
+
     # 3. Fazer a Query
     uri_bucket = f"s3://{bucket_name}/{key}"
     query = f"""
@@ -92,6 +99,7 @@ def test_raise_error_missing_credential_duckdb_aws():
         ) AS json_content;
     """
 
+    # 4. Instanciar a Classe
     db = DuckDBManager()
     with pytest.raises(DuckDBHTTPError) as excinfo:
         db.make_query(query)
