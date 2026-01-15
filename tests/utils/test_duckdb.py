@@ -82,7 +82,7 @@ def test_raise_error_missing_credential_duckdb_aws():
     key = "staging/2025_10_06_123456789_0.json"
 
     # 2. Chamando funcao de upload
-    mock_upload_s3()
+    mock_upload_s3(bucket_name=bucket_name, key=key)
 
     # 3. Fazer a Query
     uri_bucket = f"s3://{bucket_name}/{key}"
