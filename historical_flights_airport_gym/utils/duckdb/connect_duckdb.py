@@ -39,4 +39,5 @@ class DuckDBManager:
                               """
             )
 
-    pass
+    def make_query(self, query):
+        self.conn.sql(query)
