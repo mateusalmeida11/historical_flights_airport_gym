@@ -19,3 +19,10 @@ def test_conexao_duckdb_s3_success():
     conn = duck.conn
 
     assert isinstance(conn, DuckDBPyConnection)
+
+
+def test_setup_inicial_aws():
+    duck = DuckDBManager()
+    result = duck._conect_aws()
+
+    assert result is None
