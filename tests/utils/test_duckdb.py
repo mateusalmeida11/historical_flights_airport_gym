@@ -184,3 +184,32 @@ def test_raise_catalog_exception_error_duckdb():
 
     e = excinfo.value
     assert "Catalog Error" in e.message
+
+
+def test_make_query_successful():
+    bucket_name = "mateus-us-east-1-etl-flights"
+    key = "staging/2025_10_06_123456789_0.json"
+
+    # 2. Chamando funcao de upload
+    mock_upload_s3(bucket_name=bucket_name, key=key)
+
+    uri_bucket = f"s3://{bucket_name}/{key}"
+
+    query = f"""
+    SELECT
+        content.*
+    FROM
+        (
+            SELECT
+                unnest(content) AS content
+            FROM
+                read_json('{uri_bucket}')
+        ) AS json_content;
+    """
+
+    db = DuckDBManager(s3_endpoint="localhost:4566")
+    conn = db.conn
+    result = conn.sql(query)
+
+    assert len(result.columns) == 20
+    assert len(result) == 1
