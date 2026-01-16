@@ -9,7 +9,8 @@ readme = "README.md"
 python = "^3.12"
 requests = "^2.32.5"
 boto3 = "^1.40.43"
-duckdb = "^1.4.3"
+soda-core-duckdb = "^3.5.6"
+setuptools = "^80.9.0"
 
 
 [tool.poetry.group.dev.dependencies]
