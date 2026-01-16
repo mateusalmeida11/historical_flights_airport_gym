@@ -88,7 +88,8 @@ def test_raise_error_missing_credential_duckdb_aws():
     mock_upload_s3(bucket_name=bucket_name, key=key)
 
     # 3. Fazer a Query
-    uri_bucket = f"s3://{bucket_name}/{key}"
+    key_err = "staging/2025_10_06_1456789_0.json"
+    uri_bucket = f"s3://{bucket_name}/{key_err}"
     query = f"""
     CREATE TABLE IF NOT EXISTS flights AS
     SELECT
@@ -134,7 +135,7 @@ def test_raise_binder_error_query_duckdb():
                 read_json('{uri_bucket}')
         ) AS json_content;
     """
-    db = DuckDBManager(s3_endpoint="localhost:4566")
+    db = DuckDBManager()
     with pytest.raises(DuckDBErrorNotFindKey) as excinfo:
         db.make_query(query)
 
@@ -178,7 +179,7 @@ def test_raise_catalog_exception_error_duckdb():
                 read_json('{uri_bucket}')
         ) AS json_content;
     """
-    db = DuckDBManager(s3_endpoint="localhost:4566")
+    db = DuckDBManager()
     with pytest.raises(DuckDBCatalogExceptionError) as excinfo:
         db.make_query(query)
         db.make_query(query_view)
@@ -208,7 +209,7 @@ def test_make_query_successful():
         ) AS json_content;
     """
 
-    db = DuckDBManager(s3_endpoint="localhost:4566")
+    db = DuckDBManager()
     conn = db.conn
     result = conn.sql(query)
 
@@ -224,7 +225,7 @@ def test_raise_exception_parser():
     mock_upload_s3(bucket_name=bucket_name, key=key)
 
     uri_bucket = f"s3://{bucket_name}/{key}"
-    db = DuckDBManager(s3_endpoint="localhost:4566")
+    db = DuckDBManager()
     with pytest.raises(DuckDBParserError) as excinfo:
         db.make_query(f"SELECTT * FROM read_json('{uri_bucket}')")
 
