@@ -1,4 +1,4 @@
-checks for flights:
+checks for brazilian_flights_staging:
   - row_count > 0
   - schema:
       name: Confirm that required columns are present
