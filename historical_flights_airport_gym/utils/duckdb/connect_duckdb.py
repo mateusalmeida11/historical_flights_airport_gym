@@ -1,3 +1,5 @@
+import os
+
 import duckdb
 from duckdb import BinderException, CatalogException, HTTPException, ParserException
 
@@ -33,9 +35,9 @@ class DuckDBExceptionGeneric(Exception):
 
 
 class DuckDBManager:
-    def __init__(self, s3_endpoint=None):
+    def __init__(self):
         self.conn = duckdb.connect(":memory")
-        self.s3_endpoint = s3_endpoint
+        self.s3_endpoint = os.getenv("S3_ENDPOINT")
         self._conect_aws()
 
     def _conect_aws(self):
