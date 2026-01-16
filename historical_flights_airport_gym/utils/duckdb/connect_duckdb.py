@@ -1,5 +1,5 @@
 import duckdb
-from duckdb import BinderException, HTTPException
+from duckdb import BinderException, CatalogException, HTTPException
 
 
 class DuckDBHTTPError(Exception):
@@ -9,6 +9,12 @@ class DuckDBHTTPError(Exception):
 
 
 class DuckDBErrorNotFindKey(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+        self.message = message
+
+
+class DuckDBCatalogExceptionError(Exception):
     def __init__(self, message):
         super().__init__(message)
         self.message = message
@@ -54,3 +60,5 @@ class DuckDBManager:
             raise DuckDBHTTPError(str(e)) from e
         except BinderException as e:
             raise DuckDBErrorNotFindKey(str(e)) from e
+        except CatalogException as e:
+            raise DuckDBCatalogExceptionError(str(e)) from e
