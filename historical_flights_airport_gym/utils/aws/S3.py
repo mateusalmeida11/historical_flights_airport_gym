@@ -31,23 +31,25 @@ class S3WithoutBodyResponse(Exception):
 
 
 class S3:
-    def __init__(self, s3_client=None):
-        self.s3_client = s3_client or self.create_client()
+    def __init__(self):
+        self.s3_client = self.create_client()
 
     def create_client(self):
         access_key = os.environ.get("ACCESS_KEY")
         secret_access_key = os.environ.get("SECRET_ACCESS_KEY")
         region = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
+        endpoint = os.environ.get("ENDPOINT_URL")
+
+        kwargs = {"region_name": region}
+
+        if endpoint:
+            kwargs["endpoint_url"] = endpoint
 
         if access_key and secret_access_key:
-            return boto3.client(
-                "s3",
-                aws_access_key_id=access_key,
-                aws_secret_access_key=secret_access_key,
-                region_name=region,
-            )
-        else:
-            return boto3.client("s3", region_name=region)
+            kwargs["aws_access_key_id"] = access_key
+            kwargs["aws_secret_access_key"] = secret_access_key
+
+        return boto3.client("s3", **kwargs)
 
     def upload_file(self, bucket, data, key):
         try:
