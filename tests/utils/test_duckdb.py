@@ -61,7 +61,7 @@ def mock_upload_s3(bucket_name, key):
     jsonData = json.dumps(body, indent=4)
 
     # 2. Upload para o S3
-    s3 = S3(s3_client=s3_client)
+    s3 = S3()
     s3.upload_file(data=jsonData, bucket=bucket_name, key=key)
 
 
@@ -79,7 +79,13 @@ def test_setup_inicial_aws():
     assert result is None
 
 
-def test_raise_error_missing_credential_duckdb_aws():
+def test_raise_error_missing_credential_duckdb_aws(monkeypatch):
+    # set variaveis de ambiente
+    monkeypatch.setenv("AWS_DEFAULT_REGION", "us-east-1")
+    monkeypatch.setenv("ACCESS_KEY", "test")
+    monkeypatch.setenv("SECRET_ACCESS_KEY", "test")
+    monkeypatch.setenv("ENDPOINT_URL", "http://localhost:4566")
+
     # 1. criando nome do bucket e key
     bucket_name = "mateus-us-east-1-etl-flights"
     key = "staging/2025_10_06_123456789_0.json"
@@ -112,7 +118,13 @@ def test_raise_error_missing_credential_duckdb_aws():
     assert "HTTP Error" in e.message
 
 
-def test_raise_binder_error_query_duckdb():
+def test_raise_binder_error_query_duckdb(monkeypatch):
+    # set variaveis de ambiente
+    monkeypatch.setenv("AWS_DEFAULT_REGION", "us-east-1")
+    monkeypatch.setenv("ACCESS_KEY", "test")
+    monkeypatch.setenv("SECRET_ACCESS_KEY", "test")
+    monkeypatch.setenv("ENDPOINT_URL", "http://localhost:4566")
+
     # 1. criando nome do bucket e key
     bucket_name = "mateus-us-east-1-etl-flights"
     key = "staging/2025_10_06_123456789_0.json"
@@ -144,7 +156,13 @@ def test_raise_binder_error_query_duckdb():
     assert column_missing in e.message
 
 
-def test_raise_catalog_exception_error_duckdb():
+def test_raise_catalog_exception_error_duckdb(monkeypatch):
+    # set variaveis de ambiente
+    monkeypatch.setenv("AWS_DEFAULT_REGION", "us-east-1")
+    monkeypatch.setenv("ACCESS_KEY", "test")
+    monkeypatch.setenv("SECRET_ACCESS_KEY", "test")
+    monkeypatch.setenv("ENDPOINT_URL", "http://localhost:4566")
+
     # 1. criando nome do bucket e key
     bucket_name = "mateus-us-east-1-etl-flights"
     key = "staging/2025_10_06_123456789_0.json"
@@ -188,8 +206,14 @@ def test_raise_catalog_exception_error_duckdb():
     assert "Catalog Error" in e.message
 
 
-def test_make_query_successful():
+def test_make_query_successful(monkeypatch):
+    # set variaveis de ambiente
+    monkeypatch.setenv("AWS_DEFAULT_REGION", "us-east-1")
+    monkeypatch.setenv("ACCESS_KEY", "test")
+    monkeypatch.setenv("SECRET_ACCESS_KEY", "test")
+    monkeypatch.setenv("ENDPOINT_URL", "http://localhost:4566")
     bucket_name = "mateus-us-east-1-etl-flights"
+
     key = "staging/2025_10_06_123456789_0.json"
 
     # 2. Chamando funcao de upload
@@ -217,8 +241,14 @@ def test_make_query_successful():
     assert len(result) == 1
 
 
-def test_raise_exception_parser():
+def test_raise_exception_parser(monkeypatch):
+    # set variaveis de ambiente
+    monkeypatch.setenv("AWS_DEFAULT_REGION", "us-east-1")
+    monkeypatch.setenv("ACCESS_KEY", "test")
+    monkeypatch.setenv("SECRET_ACCESS_KEY", "test")
+    monkeypatch.setenv("ENDPOINT_URL", "http://localhost:4566")
     bucket_name = "mateus-us-east-1-etl-flights"
+
     key = "staging/2025_10_06_123456789_0.json"
 
     # 2. Chamando funcao de upload
