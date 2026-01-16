@@ -10,6 +10,7 @@ from historical_flights_airport_gym.utils.duckdb.connect_duckdb import (
     DuckDBErrorNotFindKey,
     DuckDBHTTPError,
     DuckDBManager,
+    DuckDBParserError,
 )
 
 
@@ -213,3 +214,19 @@ def test_make_query_successful():
 
     assert len(result.columns) == 20
     assert len(result) == 1
+
+
+def test_raise_exception_parser():
+    bucket_name = "mateus-us-east-1-etl-flights"
+    key = "staging/2025_10_06_123456789_0.json"
+
+    # 2. Chamando funcao de upload
+    mock_upload_s3(bucket_name=bucket_name, key=key)
+
+    uri_bucket = f"s3://{bucket_name}/{key}"
+    db = DuckDBManager(s3_endpoint="localhost:4566")
+    with pytest.raises(DuckDBParserError) as excinfo:
+        db.make_query(f"SELECTT * FROM read_json('{uri_bucket}')")
+
+    e = excinfo.value
+    assert "syntax error" in e.message
