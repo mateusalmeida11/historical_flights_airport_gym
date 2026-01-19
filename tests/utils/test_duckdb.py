@@ -73,6 +73,14 @@ def test_conexao_duckdb_s3_success():
     assert isinstance(conn, DuckDBPyConnection)
 
 
+def test_query_simple_to_validate_duckdb_conn():
+    db = DuckDBConnection()
+    conn = db.get_conn()
+    result = conn.sql("SELECT 35").fetchall()[0][0]
+
+    assert result == 35
+
+
 def test_setup_inicial_aws():
     duck = DuckDBManager()
     result = duck._conect_aws()
