@@ -7,6 +7,7 @@ from duckdb import DuckDBPyConnection
 from historical_flights_airport_gym.utils.aws.S3 import S3
 from historical_flights_airport_gym.utils.duckdb.connect_duckdb import (
     DuckDBCatalogExceptionError,
+    DuckDBConnection,
     DuckDBErrorNotFindKey,
     DuckDBHTTPError,
     DuckDBManager,
@@ -66,8 +67,8 @@ def mock_upload_s3(bucket_name, key):
 
 
 def test_conexao_duckdb_s3_success():
-    duck = DuckDBManager()
-    conn = duck.conn
+    db = DuckDBConnection()
+    conn = db.conn
 
     assert isinstance(conn, DuckDBPyConnection)
 
