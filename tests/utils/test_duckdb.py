@@ -68,7 +68,7 @@ def mock_upload_s3(bucket_name, key):
 
 def test_conexao_duckdb_s3_success():
     db = DuckDBConnection()
-    conn = db.conn
+    conn = db.get_conn()
 
     assert isinstance(conn, DuckDBPyConnection)
 
