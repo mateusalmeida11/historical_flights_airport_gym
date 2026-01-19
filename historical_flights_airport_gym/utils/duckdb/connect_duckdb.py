@@ -34,6 +34,14 @@ class DuckDBExceptionGeneric(Exception):
         self.message = message
 
 
+class DuckDBConnection:
+    def __init__(self, database=":memory"):
+        self.conn = duckdb.connect(database)
+
+    def get_conn(self):
+        return self.conn
+
+
 class DuckDBManager:
     def __init__(self):
         self.conn = duckdb.connect(":memory")
