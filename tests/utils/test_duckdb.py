@@ -81,6 +81,16 @@ def test_query_simple_to_validate_duckdb_conn():
     assert result == 35
 
 
+def test_insert_value_in_memory_duckdb():
+    db = DuckDBConnection()
+    conn = db.get_conn()
+    conn.execute("CREATE TABLE test (id INTEGER)")
+    conn.execute("INSERT INTO test VALUES (1)")
+    result = conn.execute("SELECT * FROM test").fetchall()
+
+    assert result[0][0] == 1
+
+
 def test_setup_inicial_aws():
     duck = DuckDBManager()
     result = duck._conect_aws()
