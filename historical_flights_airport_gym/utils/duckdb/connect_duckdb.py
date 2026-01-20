@@ -1,7 +1,13 @@
 import os
 
 import duckdb
-from duckdb import BinderException, CatalogException, HTTPException, ParserException
+from duckdb import (
+    BinderException,
+    CatalogException,
+    DuckDBPyConnection,
+    HTTPException,
+    ParserException,
+)
 
 
 class DuckDBHTTPError(Exception):
@@ -46,7 +52,36 @@ class DuckDBConnection:
 
 
 class DuckDBS3Configurator:
-    pass
+    def __init__(self, conn: DuckDBPyConnection):
+        self.conn = conn
+
+    def configure(self, s3_endpoint: str = None):
+        self.conn.execute("INSTALL httpfs;")
+        self.conn.execute("LOAD httpfs;")
+
+        if s3_endpoint:
+            self.conn.execute(
+                f"""
+                              CREATE OR REPLACE SECRET secret (
+                              TYPE s3,
+                              KEY_ID 'teste',
+                              SECRET 'teste',
+                              REGION 'us-east-1',
+                              ENDPOINT '{s3_endpoint}',
+                              URL_STYLE 'path',
+                              USE_SSL 'false'
+                              )
+                              """
+            )
+        else:
+            self.conn.execute(
+                """
+                              CREATE OR REPLACE SECRET secret (
+                              TYPE s3,
+                              PROVIDER credential_chain
+                              );
+                              """
+            )
 
 
 class DuckDBManager:
