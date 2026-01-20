@@ -41,6 +41,13 @@ class DuckDBConnection:
     def get_conn(self):
         return self.conn
 
+    def close(self):
+        return self.conn.close()
+
+
+class DuckDBS3Configurator:
+    pass
+
 
 class DuckDBManager:
     def __init__(self):
