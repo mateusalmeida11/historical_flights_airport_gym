@@ -12,6 +12,7 @@ from historical_flights_airport_gym.utils.duckdb.connect_duckdb import (
     DuckDBHTTPError,
     DuckDBManager,
     DuckDBParserError,
+    DuckDBS3Configurator,
 )
 
 
@@ -84,11 +85,46 @@ def test_query_simple_to_validate_duckdb_conn():
 def test_insert_value_in_memory_duckdb():
     db = DuckDBConnection()
     conn = db.get_conn()
-    conn.execute("CREATE TABLE test (id INTEGER)")
+    conn.execute("CREATE OR REPLACE TABLE test (id INTEGER)")
     conn.execute("INSERT INTO test VALUES (1)")
     result = conn.execute("SELECT * FROM test").fetchall()
+    db.close()
 
     assert result[0][0] == 1
+
+
+def test_connection_s3_with_valid_query():
+    # set variaveis de ambiente
+    bucket_name = "mateus-us-east-1-etl-flights"
+
+    key = "staging/2025_10_06_123456789_0.json"
+
+    # 2. Chamando funcao de upload
+    mock_upload_s3(bucket_name=bucket_name, key=key)
+
+    uri_bucket = f"s3://{bucket_name}/{key}"
+
+    query = f"""
+    SELECT
+        content.*
+    FROM
+        (
+            SELECT
+                unnest(content) AS content
+            FROM
+                read_json('{uri_bucket}')
+        ) AS json_content;
+    """
+
+    db = DuckDBConnection()
+    conn = db.get_conn()
+    s3_config = DuckDBS3Configurator(conn)
+    s3_config.config(endpoint="http://localhost:4566")
+
+    result = conn.sql(query)
+
+    assert len(result.columns) == 20
+    assert len(result) == 1
 
 
 def test_setup_inicial_aws():
@@ -223,41 +259,6 @@ def test_raise_catalog_exception_error_duckdb(monkeypatch):
 
     e = excinfo.value
     assert "Catalog Error" in e.message
-
-
-def test_make_query_successful(monkeypatch):
-    # set variaveis de ambiente
-    monkeypatch.setenv("AWS_DEFAULT_REGION", "us-east-1")
-    monkeypatch.setenv("ACCESS_KEY", "test")
-    monkeypatch.setenv("SECRET_ACCESS_KEY", "test")
-    monkeypatch.setenv("ENDPOINT_URL", "http://localhost:4566")
-    bucket_name = "mateus-us-east-1-etl-flights"
-
-    key = "staging/2025_10_06_123456789_0.json"
-
-    # 2. Chamando funcao de upload
-    mock_upload_s3(bucket_name=bucket_name, key=key)
-
-    uri_bucket = f"s3://{bucket_name}/{key}"
-
-    query = f"""
-    SELECT
-        content.*
-    FROM
-        (
-            SELECT
-                unnest(content) AS content
-            FROM
-                read_json('{uri_bucket}')
-        ) AS json_content;
-    """
-
-    db = DuckDBManager()
-    conn = db.conn
-    result = conn.sql(query)
-
-    assert len(result.columns) == 20
-    assert len(result) == 1
 
 
 def test_raise_exception_parser(monkeypatch):
