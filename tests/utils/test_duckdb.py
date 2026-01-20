@@ -93,10 +93,14 @@ def test_insert_value_in_memory_duckdb():
     assert result[0][0] == 1
 
 
-def test_connection_s3_with_valid_query():
-    # set variaveis de ambiente
-    bucket_name = "mateus-us-east-1-etl-flights"
+def test_connection_s3_with_valid_query(monkeypatch):
+    monkeypatch.setenv("AWS_DEFAULT_REGION", "us-east-1")
+    monkeypatch.setenv("ACCESS_KEY", "test")
+    monkeypatch.setenv("SECRET_ACCESS_KEY", "test")
+    monkeypatch.setenv("ENDPOINT_URL", "http://localhost:4566")
 
+    # 1. criando nome do bucket e key
+    bucket_name = "mateus-us-east-1-etl-flights"
     key = "staging/2025_10_06_123456789_0.json"
 
     # 2. Chamando funcao de upload
@@ -119,7 +123,7 @@ def test_connection_s3_with_valid_query():
     db = DuckDBConnection()
     conn = db.get_conn()
     s3_config = DuckDBS3Configurator(conn)
-    s3_config.config(endpoint="http://localhost:4566")
+    s3_config.configure(s3_endpoint="localhost:4566")
 
     result = conn.sql(query)
 
