@@ -39,6 +39,60 @@ class S3Config:
     secret_access_key: str = None
 
 
+class S3ClientFactory:
+    @staticmethod
+    def create(config: S3Config):
+        kwargs = {"region_name": config.region}
+
+        if config.endpoint:
+            kwargs["endpoint_url"] = config.endpoint
+
+        if config.access_key and config.secret_access_key:
+            kwargs["aws_access_key_id"] = config.access_key
+            kwargs["aws_secret_access_key"] = config.secret_access_key
+
+        return boto3.client("s3", **kwargs)
+
+
+class S3Storage:
+    def __init__(self, s3_client):
+        self.s3_client = s3_client
+
+    def upload_file(self, bucket, data, key):
+        try:
+            response = self.s3_client.put_object(
+                Body=data,
+                Key=key,
+                Bucket=bucket,
+                ContentType="application/json",
+            )
+            return response
+        except ClientError as e:
+            raise S3UploadError(
+                e.response["Error"]["Message"],
+                status_code=e.response["ResponseMetadata"]["HTTPStatusCode"],
+            ) from e
+
+    def get_file(self, bucket_name, key):
+        try:
+            response = self.s3_client.get_object(Bucket=bucket_name, Key=key)
+        except ClientError as e:
+            raise S3GetError(
+                e.response["Error"]["Message"],
+                status_code=e.response["ResponseMetadata"]["HTTPStatusCode"],
+            ) from e
+
+        lenght = int(response["ResponseMetadata"]["HTTPHeaders"]["content-length"])
+        body = response.get("Body", None)
+        if lenght <= 0:
+            raise S3EmptyFile("Empty File")
+
+        if not body:
+            raise S3WithoutBodyResponse("Without Body in Response")
+
+        return body
+
+
 class S3:
     def __init__(self):
         self.s3_client = self.create_client()
