@@ -1,4 +1,5 @@
 import json
+import os
 from unittest.mock import MagicMock, patch
 
 import boto3
@@ -7,12 +8,21 @@ from botocore.response import StreamingBody
 from moto import mock_aws
 
 from historical_flights_airport_gym.utils.aws.S3 import (
-    S3,
+    S3ClientFactory,
+    S3Config,
     S3EmptyFile,
     S3GetError,
+    S3Storage,
     S3UploadError,
     S3WithoutBodyResponse,
 )
+
+config = S3Config(
+    region=os.getenv("AWS_DEFAULT_REGION", "us-east-1"),
+    access_key=os.getenv("ACCESS_KEY"),
+    secret_access_key=os.getenv("SECRET_ACCESS_KEY"),
+)
+s3_client = S3ClientFactory().create(config)
 
 
 @mock_aws
@@ -48,7 +58,8 @@ def test_upload_s3_success():
     ]
 
     jsonData = json.dumps(body, indent=4)
-    s3 = S3()
+
+    s3 = S3Storage(s3_client=s3_client)
     response = s3.upload_file(data=jsonData, bucket=bucket_name, key=key)
 
     status_code = response["ResponseMetadata"]["HTTPStatusCode"]
@@ -91,7 +102,7 @@ def test_upload_s3_inexistente():
     jsonData = json.dumps(body, indent=4)
 
     with pytest.raises(S3UploadError) as excinfo:
-        s3 = S3()
+        s3 = S3Storage(s3_client=s3_client)
         s3.upload_file(data=jsonData, bucket=bucket_name, key=key)
 
     e = excinfo.value
@@ -107,7 +118,7 @@ def test_get_object_bucket_inexistente():
     boto3.client("s3", region_name="us-east-1")
 
     with pytest.raises(S3GetError) as excinfo:
-        s3 = S3()
+        s3 = S3Storage(s3_client=s3_client)
         s3.get_file(bucket_name=bucket_name, key=key)
     e = excinfo.value
 
@@ -149,7 +160,7 @@ def test_get_object_bucket_success():
     ]
 
     jsonData = json.dumps(body, indent=4)
-    s3 = S3()
+    s3 = S3Storage(s3_client=s3_client)
     s3.upload_file(data=jsonData, bucket=bucket_name, key=key)
 
     response = s3.get_file(bucket_name=bucket_name, key=key)
@@ -164,7 +175,7 @@ def test_get_object_response_empty_file():
     client = boto3.client("s3", region_name="us-east-1")
 
     client.create_bucket(Bucket=bucket_name)
-    s3 = S3()
+    s3 = S3Storage(s3_client=s3_client)
     s3.upload_file(data=b"", bucket=bucket_name, key=key)
 
     with pytest.raises(S3EmptyFile) as excinfo:
@@ -182,7 +193,7 @@ def test_get_object_response_withou_body_in_response(mock_boto_client):
     }
 
     mock_boto_client.return_value = mock_response
-    s3 = S3()
+    s3 = S3Storage(s3_client=s3_client)
     bucket_name = "etl-brazilian-flights"
     key = "staging/2025_10_06_123456789_0.json"
     with pytest.raises(S3WithoutBodyResponse) as excinfo:
