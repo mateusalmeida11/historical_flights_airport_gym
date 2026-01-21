@@ -1,6 +1,12 @@
 import json
+import os
 
-from historical_flights_airport_gym.utils.aws.S3 import S3, S3UploadError
+from historical_flights_airport_gym.utils.aws.S3 import (
+    S3ClientFactory,
+    S3Config,
+    S3Storage,
+    S3UploadError,
+)
 from historical_flights_airport_gym.utils.build_path import path_file_raw
 from historical_flights_airport_gym.utils.get_data import RequestError, get_data
 from historical_flights_airport_gym.utils.transformations import (
@@ -9,7 +15,13 @@ from historical_flights_airport_gym.utils.transformations import (
     from_str_to_json,
 )
 
-s3 = S3()
+config = S3Config(
+    region=os.getenv("AWS_DEFAULT_REGION", "us-east-1"),
+    access_key=os.getenv("ACCESS_KEY"),
+    secret_access_key=os.getenv("SECRET_ACCESS_KEY"),
+)
+s3_client = S3ClientFactory().create(config)
+s3 = S3Storage(s3_client=s3_client)
 
 
 def lambda_handler(event, context):
