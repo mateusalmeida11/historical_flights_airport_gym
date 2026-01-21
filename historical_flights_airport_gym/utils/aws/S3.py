@@ -1,4 +1,5 @@
 import os
+from dataclasses import dataclass
 
 import boto3
 from botocore.exceptions import ClientError
@@ -28,6 +29,14 @@ class S3WithoutBodyResponse(Exception):
     def __init__(self, message):
         super().__init__(message)
         self.message = message
+
+
+@dataclass(frozen=True)
+class S3Config:
+    region: str = "us-east-1"
+    endpoint: str = None
+    access_key: str = None
+    secret_access_key: str = None
 
 
 class S3:
