@@ -1,10 +1,15 @@
 import json
+import os
 
 import boto3
 import pytest
 from duckdb import DuckDBPyConnection
 
-from historical_flights_airport_gym.utils.aws.S3 import S3
+from historical_flights_airport_gym.utils.aws.S3 import (
+    S3ClientFactory,
+    S3Config,
+    S3Storage,
+)
 from historical_flights_airport_gym.utils.duckdb.connect_duckdb import (
     DuckDBCatalogExceptionError,
     DuckDBConnection,
@@ -14,6 +19,15 @@ from historical_flights_airport_gym.utils.duckdb.connect_duckdb import (
     DuckDBParserError,
     DuckDBS3Configurator,
 )
+
+config = S3Config(
+    region=os.getenv("AWS_DEFAULT_REGION", "us-east-1"),
+    access_key=os.getenv("ACCESS_KEY"),
+    endpoint=os.getenv("ENDPOINT_URL"),
+    secret_access_key=os.getenv("SECRET_ACCESS_KEY"),
+)
+
+s3_client = S3ClientFactory().create(config)
 
 
 def create_conexao_localstack():
@@ -63,7 +77,7 @@ def mock_upload_s3(bucket_name, key):
     jsonData = json.dumps(body, indent=4)
 
     # 2. Upload para o S3
-    s3 = S3()
+    s3 = S3Storage(s3_client=s3_client)
     s3.upload_file(data=jsonData, bucket=bucket_name, key=key)
 
 
