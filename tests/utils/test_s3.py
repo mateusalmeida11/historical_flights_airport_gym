@@ -187,13 +187,12 @@ def test_get_object_response_empty_file():
 
 @patch("historical_flights_airport_gym.utils.aws.S3.boto3.client")
 def test_get_object_response_withou_body_in_response(mock_boto_client):
-    mock_response = MagicMock()
-    mock_response.get_object.return_value = {
+    mock_s3_client = MagicMock()
+
+    mock_s3_client.get_object.return_value = {
         "ResponseMetadata": {"HTTPHeaders": {"content-length": "10"}}
     }
-
-    mock_boto_client.return_value = mock_response
-    s3 = S3Storage(s3_client=s3_client)
+    s3 = S3Storage(s3_client=mock_s3_client)
     bucket_name = "etl-brazilian-flights"
     key = "staging/2025_10_06_123456789_0.json"
     with pytest.raises(S3WithoutBodyResponse) as excinfo:
