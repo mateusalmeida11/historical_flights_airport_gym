@@ -1,5 +1,3 @@
-import os
-
 import duckdb
 from duckdb import (
     BinderException,
@@ -84,38 +82,9 @@ class DuckDBS3Configurator:
             )
 
 
-class DuckDBManager:
-    def __init__(self):
-        self.conn = duckdb.connect(":memory")
-        self.s3_endpoint = os.getenv("S3_ENDPOINT")
-        self._conect_aws()
-
-    def _conect_aws(self):
-        self.conn.execute("INSTALL httpfs;")
-        self.conn.execute("LOAD httpfs;")
-        if self.s3_endpoint:
-            self.conn.execute(
-                f"""
-                              CREATE OR REPLACE SECRET secret (
-                              TYPE s3,
-                              KEY_ID 'teste',
-                              SECRET 'teste',
-                              REGION 'us-east-1',
-                              ENDPOINT '{self.s3_endpoint}',
-                              URL_STYLE 'path',
-                              USE_SSL 'false'
-                              )
-                              """
-            )
-        else:
-            self.conn.execute(
-                """
-                              CREATE OR REPLACE SECRET secret (
-                              TYPE s3,
-                              PROVIDER credential_chain
-                              );
-                              """
-            )
+class DuckDBQuery:
+    def __init__(self, conn):
+        self.conn = conn
 
     def make_query(self, query):
         try:
