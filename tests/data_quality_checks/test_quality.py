@@ -1,4 +1,4 @@
-from historical_flights_airport_gym.soda.check_function import check
+from historical_flights_airport_gym.soda.check_function import lambda_handler
 from tests.utils.test_duckdb import mock_upload_s3
 
 
@@ -8,6 +8,7 @@ def teste_data_quality_staging_to_bronze_source_anac_success(monkeypatch):
     monkeypatch.setenv("ACCESS_KEY", "test")
     monkeypatch.setenv("SECRET_ACCESS_KEY", "test")
     monkeypatch.setenv("ENDPOINT_URL", "http://localhost:4566")
+    monkeypatch.setenv("S3_ENDPOINT", "localhost:4566")
 
     # 1. criando nome do bucket e key
     bucket_name = "mateus-us-east-1-etl-flights"
@@ -30,7 +31,7 @@ def teste_data_quality_staging_to_bronze_source_anac_success(monkeypatch):
 
     context = {}
 
-    result = check(event, context)
+    result = lambda_handler(event, context)
 
     assert result["status_soda"] == 0
     assert result["path_file_check"] == f"{bucket_name}/{key}"
