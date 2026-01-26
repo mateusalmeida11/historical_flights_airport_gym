@@ -4,6 +4,7 @@ import pytest
 
 from historical_flights_airport_gym.utils.build_path import (
     RootPathDoesntExist,
+    build_path_data_quality_check_file,
     get_root_path,
     path_file_raw,
 )
@@ -35,3 +36,13 @@ def test_to_find_path_with_error():
     e = excinfo.value
 
     assert f"Diretorio do Projeto {project_name} nao encontrado" in e.message
+
+
+def test_to_build_path_data_quality_yml():
+    source_file = "staging_bronze_check.yml"
+    check_file = build_path_data_quality_check_file(source_file)
+
+    assert (
+        check_file
+        == "/Users/mateusalmeida/Desktop/projetos/historical_flights_airport_gym/historical_flights_airport_gym/soda/sources/staging_bronze_check.yml"
+    )
