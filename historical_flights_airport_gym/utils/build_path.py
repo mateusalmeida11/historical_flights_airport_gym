@@ -22,3 +22,7 @@ def get_root_path(project_name="historical_flights_airport_gym"):
         if parent.name == project_name:
             return parent
     raise RootPathDoesntExist(f"Diretorio do Projeto {project_name} nao encontrado")
+
+
+def build_path_data_quality_check_file(root_path: Path, source_file: str):
+    return root_path / "soda" / "sources" / source_file
