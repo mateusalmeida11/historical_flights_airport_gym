@@ -15,8 +15,8 @@ from historical_flights_airport_gym.utils.duckdb.connect_duckdb import (
     DuckDBConnection,
     DuckDBErrorNotFindKey,
     DuckDBHTTPError,
-    DuckDBManager,
     DuckDBParserError,
+    DuckDBQuery,
     DuckDBS3Configurator,
 )
 
@@ -38,6 +38,14 @@ def create_conexao_localstack():
         aws_secret_access_key="test",
         region_name="us-east-1",
     )
+
+
+def duckdb_initalize():
+    db = DuckDBConnection()
+    conn = db.get_conn()
+    s3_config = DuckDBS3Configurator(conn)
+    s3_config.configure(s3_endpoint="localhost:4566")
+    return DuckDBQuery(conn=conn)
 
 
 def mock_upload_s3(bucket_name, key):
@@ -146,8 +154,10 @@ def test_connection_s3_with_valid_query(monkeypatch):
 
 
 def test_setup_inicial_aws():
-    duck = DuckDBManager()
-    result = duck._conect_aws()
+    db = DuckDBConnection()
+    conn = db.get_conn()
+    s3_config = DuckDBS3Configurator(conn=conn)
+    result = s3_config.configure(s3_endpoint=os.getenv("S3_ENDPOINT"))
 
     assert result is None
 
@@ -183,9 +193,13 @@ def test_raise_error_missing_credential_duckdb_aws(monkeypatch):
     """
 
     # 4. Instanciar a Classe
-    db = DuckDBManager()
+    db = DuckDBConnection()
+    conn = db.get_conn()
+    s3_config = DuckDBS3Configurator(conn)
+    s3_config.configure()
+    db_query = DuckDBQuery(conn=conn)
     with pytest.raises(DuckDBHTTPError) as excinfo:
-        db.make_query(query)
+        db_query.make_query(query)
 
     e = excinfo.value
     assert "HTTP Error" in e.message
@@ -220,9 +234,9 @@ def test_raise_binder_error_query_duckdb(monkeypatch):
                 read_json('{uri_bucket}')
         ) AS json_content;
     """
-    db = DuckDBManager()
+    db_query = duckdb_initalize()
     with pytest.raises(DuckDBErrorNotFindKey) as excinfo:
-        db.make_query(query)
+        db_query.make_query(query)
 
     e = excinfo.value
     assert "Binder Error" in e.message
@@ -270,10 +284,10 @@ def test_raise_catalog_exception_error_duckdb(monkeypatch):
                 read_json('{uri_bucket}')
         ) AS json_content;
     """
-    db = DuckDBManager()
+    db_query = duckdb_initalize()
     with pytest.raises(DuckDBCatalogExceptionError) as excinfo:
-        db.make_query(query)
-        db.make_query(query_view)
+        db_query.make_query(query)
+        db_query.make_query(query_view)
 
     e = excinfo.value
     assert "Catalog Error" in e.message
@@ -293,9 +307,9 @@ def test_raise_exception_parser(monkeypatch):
     mock_upload_s3(bucket_name=bucket_name, key=key)
 
     uri_bucket = f"s3://{bucket_name}/{key}"
-    db = DuckDBManager()
+    db_query = duckdb_initalize()
     with pytest.raises(DuckDBParserError) as excinfo:
-        db.make_query(f"SELECTT * FROM read_json('{uri_bucket}')")
+        db_query.make_query(f"SELECTT * FROM read_json('{uri_bucket}')")
 
     e = excinfo.value
     assert "syntax error" in e.message
