@@ -3,6 +3,12 @@ import time
 from pathlib import Path
 
 
+class RootPathDoesntExist(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+        self.message = message
+
+
 def path_file_raw():
     today = datetime.datetime.today()
     today_str = today.strftime("%Y_%m_%d")
@@ -15,3 +21,4 @@ def get_root_path(project_name="historical_flights_airport_gym"):
     for parent in path.parents:
         if parent.name == project_name:
             return parent
+    raise RootPathDoesntExist(f"Diretorio do Projeto {project_name} nao encontrado")
