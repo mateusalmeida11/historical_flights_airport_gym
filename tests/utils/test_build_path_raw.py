@@ -1,4 +1,5 @@
 import re
+from pathlib import Path
 
 import pytest
 
@@ -40,9 +41,11 @@ def test_to_find_path_with_error():
 
 def test_to_build_path_data_quality_yml():
     source_file = "staging_bronze_check.yml"
-    check_file = build_path_data_quality_check_file(source_file)
+    root_path = get_root_path()
+    check_file = build_path_data_quality_check_file(
+        root_path=root_path, source_file=source_file
+    )
 
-    assert (
-        check_file
-        == "/Users/mateusalmeida/Desktop/projetos/historical_flights_airport_gym/historical_flights_airport_gym/soda/sources/staging_bronze_check.yml"
+    assert check_file == Path(
+        "/Users/mateusalmeida/Desktop/projetos/historical_flights_airport_gym/historical_flights_airport_gym/soda/sources/staging_bronze_check.yml"
     )
