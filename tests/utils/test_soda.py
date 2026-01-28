@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 from historical_flights_airport_gym.utils.quality.check import SodaAnalyzer
 
 
-@patch("historical_flights_airport_gym.utils.quality.check.soda.scan.Scan")
+@patch("historical_flights_airport_gym.utils.quality.check.Scan")
 def test_funcao_retorna_status_e_dicionario_dq_check(mock_get):
     mock_response = MagicMock()
     mock_response.execute.return_value = 0
