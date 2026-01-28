@@ -9,6 +9,7 @@ readme = "README.md"
 python = "^3.12"
 requests = "^2.32.5"
 boto3 = "^1.40.43"
+duckdb = "<1.1.0"
 soda-core-duckdb = "^3.5.6"
 setuptools = "^80.9.0"
 
