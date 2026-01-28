@@ -2,6 +2,7 @@ import json
 import os
 
 import boto3
+import pytest
 
 from historical_flights_airport_gym.utils.aws.S3 import (
     S3ClientFactory,
@@ -10,6 +11,7 @@ from historical_flights_airport_gym.utils.aws.S3 import (
 )
 from historical_flights_airport_gym.utils.duckdb.connect_duckdb import (
     DuckDBConnection,
+    DuckDBHTTPError,
     DuckDBQuery,
     DuckDBS3Configurator,
 )
@@ -104,3 +106,35 @@ def test_integration_make_query_successfull(monkeypatch):
     result = conn.sql(f"SELECT * FROM {table_name}")
     assert len(result.columns) == 20
     assert len(result) == 1
+
+
+def test_integration_error_in_query(monkeypatch):
+    monkeypatch.setenv("AWS_DEFAULT_REGION", "us-east-1")
+    monkeypatch.setenv("ACCESS_KEY", "test")
+    monkeypatch.setenv("SECRET_ACCESS_KEY", "test")
+    monkeypatch.setenv("ENDPOINT_URL", "http://localhost:4566")
+
+    bucket_name = "mateus-us-east-1-etl-flights"
+    key = "staging/2025_10_06_123456789_0.json"
+
+    # 2. Chamando funcao de upload
+    mock_upload_s3(bucket_name=bucket_name, key=key)
+
+    s3_uri = f"s3://{bucket_name}/{key}"
+    table_name = "brazilian_flights_staging"
+    db = DuckDBConnection()
+    conn = db.get_conn()
+    db_s3_config = DuckDBS3Configurator(conn)
+    db_s3_config.configure()
+
+    query_executor = DuckDBQuery(conn=conn)
+
+    quality_queries = QualityQuerieService(query_executor)
+
+    with pytest.raises(DuckDBHTTPError) as excinfo:
+        quality_queries.create_view_from_json_staging(
+            table_name=table_name, s3_uri=s3_uri
+        )
+
+    e = excinfo.value
+    assert "HTTP Error" in e.message
