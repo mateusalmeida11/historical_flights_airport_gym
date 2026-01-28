@@ -54,6 +54,7 @@ class DuckDBS3Configurator:
         self.conn = conn
 
     def configure(self, s3_endpoint: str = None):
+        self.conn.execute("SET home_directory='/tmp/duckdb/'")
         self.conn.execute("INSTALL httpfs;")
         self.conn.execute("LOAD httpfs;")
 
