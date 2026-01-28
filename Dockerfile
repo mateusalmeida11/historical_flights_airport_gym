@@ -2,6 +2,7 @@ FROM public.ecr.aws/lambda/python:3.12
 
 WORKDIR /var/task
 
+ENV HOME="/tmp"
 ENV PYTHONPATH="/var/task"
 
 COPY pyproject.toml poetry.lock ./
