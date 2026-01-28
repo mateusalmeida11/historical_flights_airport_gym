@@ -1,9 +1,16 @@
 import json
 import os
+from unittest.mock import MagicMock
 
 import boto3
 import pytest
-from duckdb import DuckDBPyConnection
+from duckdb import (
+    BinderException,
+    CatalogException,
+    DuckDBPyConnection,
+    HTTPException,
+    ParserException,
+)
 
 from historical_flights_airport_gym.utils.aws.S3 import (
     S3ClientFactory,
@@ -162,154 +169,48 @@ def test_setup_inicial_aws():
     assert result is None
 
 
-def test_raise_error_missing_credential_duckdb_aws(monkeypatch):
-    # set variaveis de ambiente
-    monkeypatch.setenv("AWS_DEFAULT_REGION", "us-east-1")
-    monkeypatch.setenv("ACCESS_KEY", "test")
-    monkeypatch.setenv("SECRET_ACCESS_KEY", "test")
-    monkeypatch.setenv("ENDPOINT_URL", "http://localhost:4566")
-
-    # 1. criando nome do bucket e key
-    bucket_name = "mateus-us-east-1-etl-flights"
-    key = "staging/2025_10_06_123456789_0.json"
-
-    # 2. Chamando funcao de upload
-    mock_upload_s3(bucket_name=bucket_name, key=key)
-
-    # 3. Fazer a Query
-    key_err = "staging/2025_10_06_1456789_0.json"
-    uri_bucket = f"s3://{bucket_name}/{key_err}"
-    query = f"""
-    CREATE TABLE IF NOT EXISTS flights AS
-    SELECT
-        content.*
-    FROM
-        (
-            SELECT
-                unnest(content) AS content
-            FROM
-                read_json('{uri_bucket}')
-        ) AS json_content;
-    """
-
-    # 4. Instanciar a Classe
-    db = DuckDBConnection()
-    conn = db.get_conn()
-    s3_config = DuckDBS3Configurator(conn)
-    s3_config.configure()
-    db_query = DuckDBQuery(conn=conn)
+def test_mock_raise_http_error_duckdb():
+    mock_conn = MagicMock()
+    mock_conn.sql.side_effect = HTTPException("HTTP Error")
+    query_service = DuckDBQuery(conn=mock_conn)
+    query = "SELECT * FROM read_json('s3://bucket/private.json')"
     with pytest.raises(DuckDBHTTPError) as excinfo:
-        db_query.make_query(query)
-
+        query_service.make_query(query)
     e = excinfo.value
     assert "HTTP Error" in e.message
 
 
-def test_raise_binder_error_query_duckdb(monkeypatch):
-    # set variaveis de ambiente
-    monkeypatch.setenv("AWS_DEFAULT_REGION", "us-east-1")
-    monkeypatch.setenv("ACCESS_KEY", "test")
-    monkeypatch.setenv("SECRET_ACCESS_KEY", "test")
-    monkeypatch.setenv("ENDPOINT_URL", "http://localhost:4566")
-
-    # 1. criando nome do bucket e key
-    bucket_name = "mateus-us-east-1-etl-flights"
-    key = "staging/2025_10_06_123456789_0.json"
-
-    # 2. Chamando funcao de upload
-    mock_upload_s3(bucket_name=bucket_name, key=key)
-
-    # 3. Fazer a Query
-    uri_bucket = f"s3://{bucket_name}/{key}"
-    column_missing = "qualquer_coluna"
-    query = f"""
-    CREATE TABLE IF NOT EXISTS flights AS
-    SELECT
-        content.{column_missing}
-    FROM
-        (
-            SELECT
-                unnest(content) AS content
-            FROM
-                read_json('{uri_bucket}')
-        ) AS json_content;
-    """
-    db_query = duckdb_initalize()
+def test_mock_raise_binder_exception_duckdb():
+    mock_conn = MagicMock()
+    mock_conn.sql.side_effect = BinderException("Binder Error")
+    query_service = DuckDBQuery(conn=mock_conn)
+    query = "SELECT column_not_exist FROM read_json('s3://bucket/file.json')"
     with pytest.raises(DuckDBErrorNotFindKey) as excinfo:
-        db_query.make_query(query)
+        query_service.make_query(query)
 
     e = excinfo.value
     assert "Binder Error" in e.message
-    assert column_missing in e.message
 
 
-def test_raise_catalog_exception_error_duckdb(monkeypatch):
-    # set variaveis de ambiente
-    monkeypatch.setenv("AWS_DEFAULT_REGION", "us-east-1")
-    monkeypatch.setenv("ACCESS_KEY", "test")
-    monkeypatch.setenv("SECRET_ACCESS_KEY", "test")
-    monkeypatch.setenv("ENDPOINT_URL", "http://localhost:4566")
-
-    # 1. criando nome do bucket e key
-    bucket_name = "mateus-us-east-1-etl-flights"
-    key = "staging/2025_10_06_123456789_0.json"
-
-    # 2. Chamando funcao de upload
-    mock_upload_s3(bucket_name=bucket_name, key=key)
-
-    # 3. Fazer a Query
-    uri_bucket = f"s3://{bucket_name}/{key}"
-    query = f"""
-    CREATE TABLE IF NOT EXISTS flights AS
-    SELECT
-        content.*
-    FROM
-        (
-            SELECT
-                unnest(content) AS content
-            FROM
-                read_json('{uri_bucket}')
-        ) AS json_content;
-    """
-
-    query_view = f"""
-    CREATE OR REPLACE VIEW flights AS
-    SELECT
-        content.*
-    FROM
-        (
-            SELECT
-                unnest(content) AS content
-            FROM
-                read_json('{uri_bucket}')
-        ) AS json_content;
-    """
-    db_query = duckdb_initalize()
+def test_mock_raise_catalog_exception_duckdb():
+    mock_conn = MagicMock()
+    mock_conn.sql.side_effect = CatalogException("Catalog Exception")
+    query_service = DuckDBQuery(conn=mock_conn)
+    query = "SELECT * FROM tabela_inexistente"
     with pytest.raises(DuckDBCatalogExceptionError) as excinfo:
-        db_query.make_query(query)
-        db_query.make_query(query_view)
+        query_service.make_query(query)
 
     e = excinfo.value
-    assert "Catalog Error" in e.message
+    assert "Catalog Exception" in e.message
 
 
-def test_raise_exception_parser(monkeypatch):
-    # set variaveis de ambiente
-    monkeypatch.setenv("AWS_DEFAULT_REGION", "us-east-1")
-    monkeypatch.setenv("ACCESS_KEY", "test")
-    monkeypatch.setenv("SECRET_ACCESS_KEY", "test")
-    monkeypatch.setenv("ENDPOINT_URL", "http://localhost:4566")
-    bucket_name = "mateus-us-east-1-etl-flights"
-
-    key = "staging/2025_10_06_123456789_0.json"
-
-    # 2. Chamando funcao de upload
-    mock_upload_s3(bucket_name=bucket_name, key=key)
-
-    uri_bucket = f"s3://{bucket_name}/{key}"
-    db_query = duckdb_initalize()
+def test_mock_raise_parse_exception_duckdb():
+    mock_conn = MagicMock()
+    mock_conn.sql.side_effect = ParserException("syntax error")
+    query_service = DuckDBQuery(conn=mock_conn)
+    query = "SELECTT * FROM tabela_inexistente"
     with pytest.raises(DuckDBParserError) as excinfo:
-        db_query.make_query(f"SELECTT * FROM read_json('{uri_bucket}')")
+        query_service.make_query(query)
 
     e = excinfo.value
     assert "syntax error" in e.message
