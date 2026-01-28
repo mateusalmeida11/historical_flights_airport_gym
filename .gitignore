@@ -87,5 +87,8 @@ ipython_config.py
 
 .env
 
+#Temporary
+/tmp
+
 #Database
 :memory
