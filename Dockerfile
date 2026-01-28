@@ -9,4 +9,5 @@ COPY pyproject.toml poetry.lock ./
 COPY historical_flights_airport_gym/ ./historical_flights_airport_gym
 
 RUN python3 -m pip install poetry
+RUN poetry config virtualenvs.create false
 RUN poetry install --only main --no-root
