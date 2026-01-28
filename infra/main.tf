@@ -16,3 +16,13 @@ module "aws_lambda_extract" {
     command_aws_lambda_flights = "historical_flights_airport_gym.conectores.anac.lambda_handler.lambda_handler"
 
 }
+
+module "aws_lambda_data_quality_staging_bronze" {
+    source = "./modules/lambda"
+    lambda_extract_name = "lambda_data_quality_staging_bronze"
+    lambda_execution_role_flights_arn = module.iam.lambda_arn_etl_flights
+    ecr_repository_url = var.ecr_repository_url
+    image_tag = var.image_tag
+    command_aws_lambda_flights = "historical_flights_airport_gym.soda.check_function.lambda_handler"
+
+}
