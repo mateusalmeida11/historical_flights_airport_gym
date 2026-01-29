@@ -1,4 +1,11 @@
-from historical_flights_airport_gym.soda.check_function import lambda_handler
+from unittest.mock import MagicMock, patch
+
+import pytest
+
+from historical_flights_airport_gym.soda.check_function import (
+    DataQualityIssue,
+    lambda_handler,
+)
 from tests.utils.test_duckdb import mock_upload_s3
 
 
@@ -36,3 +43,39 @@ def teste_data_quality_staging_to_bronze_source_anac_success(monkeypatch):
     assert result["status_soda"] == 0
     assert result["path_file_check"] == f"{bucket_name}/{key}"
     assert result["s3"]["status_code"] == 200
+
+
+def test_data_validation_raise_quality_issue():
+    table_name = "brazilian_flights_staging"
+    check_subpath_name = "staging_bronze_check.yml"
+    event = {
+        "status": "success",
+        "bucket": "mateus-us-east-1-etl-flights",
+        "key": "staging/2025_10_06_123456789_0.json",
+        "table_name": table_name,
+        "checks_subpath": check_subpath_name,
+        "s3_response": {"status_code": 200},
+    }
+    fake_s3 = MagicMock()
+    fake_s3.upload_file.return_value = {"ResponseMetadata": {"HTTPStatusCode": 200}}
+
+    fake_conn = MagicMock()
+
+    with patch(
+        "historical_flights_airport_gym.soda.check_function.build_s3",
+        return_value=fake_s3,
+    ), patch(
+        "historical_flights_airport_gym.soda.check_function.build_conn_duckdb",
+        return_value=fake_conn,
+    ), patch("historical_flights_airport_gym.soda.check_function.DuckDBQuery"), patch(
+        "historical_flights_airport_gym.soda.check_function.QualityQuerieService.create_view_from_json_staging"
+    ), patch(
+        "historical_flights_airport_gym.soda.check_function.SodaAnalyzer.run_scan",
+        return_value=(2, {"hasFailures": True, "checks": []}),
+    ):
+        with pytest.raises(DataQualityIssue) as excinfo:
+            lambda_handler(event=event, context={})
+
+        e = excinfo.value
+        assert 2 == e.code_error
+        assert "Falha em Qualidade de Dados" in e.message
