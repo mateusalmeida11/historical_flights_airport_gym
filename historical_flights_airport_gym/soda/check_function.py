@@ -20,6 +20,13 @@ from historical_flights_airport_gym.utils.quality.check import SodaAnalyzer
 from historical_flights_airport_gym.utils.queries.query import QualityQuerieService
 
 
+class DataQualityIssue(Exception):
+    def __init__(self, message: str, code_error: int):
+        super().__init__(message)
+        self.message = message
+        self.code_error = code_error
+
+
 def build_s3() -> S3Storage:
     config = S3Config(
         region=os.getenv("AWS_DEFAULT_REGION", "us-east-1"),
@@ -76,6 +83,10 @@ def lambda_handler(event, context):
 
     jsonData = json.dumps(scan_results, indent=4)
     response_s3 = s3.upload_file(bucket=bucket, data=jsonData, key=key_log)
+
+    if exit_code != 0:
+        raise DataQualityIssue("Falha em Qualidade de Dados", code_error=exit_code)
+
     return {
         "status_soda": exit_code,
         "bucket": bucket,
